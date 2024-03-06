@@ -1,3 +1,5 @@
+package ru.yandex.javacourse.kanban.tasks;
+
 import java.util.Objects;
 
 public class Task {
@@ -8,7 +10,7 @@ public class Task {
     protected TaskStatus status;
 
 
-    //Просто выделение мамяти
+    //Конструктор с полями по умолчанию
     public Task() {
 
     }
@@ -38,16 +40,32 @@ public class Task {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public TaskStatus getStatus() {
         return status;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
     }
 
     @Override
@@ -66,5 +84,18 @@ public class Task {
         return Objects.hash(id);
     }
 
-
+    /*
+    Вот тут переопределяю по наитию и остаются вопросы:
+     - я же правильно понимаю, в нашем случае одинаковыми должны считаться объекты у которого одинаковый ID,
+       а значения других полей нам не важны?
+     - так как в этом классе я не могу сделать общее переопределение equals() /в отличие от hashCode()/ то мне нужно
+       переопределять  equals() в каждом классе наследнике отдельно?
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return id == task.id;
+    }
 }

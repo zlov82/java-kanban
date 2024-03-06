@@ -1,4 +1,11 @@
+package ru.yandex.javacourse.kanban.tasks;
+
+import java.util.ArrayList;
+import java.util.Objects;
+
 public class Epic extends Task {
+
+    private ArrayList<Integer> subtaskIdList = new ArrayList<>();
 
     public Epic(String title) {
         this.title = title;
@@ -17,6 +24,18 @@ public class Epic extends Task {
         this.status = status;
     }
 
+    public void addNewSubtask(int subtaskId) {
+        subtaskIdList.add(subtaskId);
+    }
+
+    public ArrayList<Integer> getSubtaskIdList() {
+        return subtaskIdList;
+    }
+
+    public void deleteSubtask(int subtaskId) {
+        subtaskIdList.remove(subtaskId);
+    }
+
     @Override
     public String toString() {
         return "Epic{" +
@@ -25,4 +44,5 @@ public class Epic extends Task {
                 ", status=" + status +
                 '}';
     }
+
 }

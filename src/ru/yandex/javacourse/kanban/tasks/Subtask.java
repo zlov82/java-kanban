@@ -1,16 +1,18 @@
-public class SubTask extends Task {
+package ru.yandex.javacourse.kanban.tasks;
+
+public class Subtask extends Task {
 
     private int epicId;
 
 
-    public SubTask(String title, String description, int epicId) {
+    public Subtask(String title, String description, int epicId) {
         this.title = title;
         this.description = description;
         this.epicId = epicId;
         this.status = TaskStatus.NEW;
     }
 
-    public SubTask(int id, String title, String description, int epicId) {
+    public Subtask(int id, String title, String description, int epicId) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -18,7 +20,7 @@ public class SubTask extends Task {
         this.status = TaskStatus.NEW;
     }
 
-    public SubTask(int id, String title, String description, int epicId, String status) {
+    public Subtask(int id, String title, String description, int epicId, String status) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -33,7 +35,7 @@ public class SubTask extends Task {
 
     @Override
     public String toString() {
-        return "SubTask{" +
+        return "Subtask{" +
                 "id=" + id +
                 ". epicId=" + epicId +
                 ", title='" + title + '\'' +
