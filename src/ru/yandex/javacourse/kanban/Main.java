@@ -10,6 +10,7 @@ public class Main {
 
         TaskManager taskManager = new TaskManager();
 
+/*
         TestCases testCases = new TestCases(taskManager);
 
         System.out.println("===Обновление задачи 4===");
@@ -52,6 +53,7 @@ public class Main {
         testCases.updateSubtask(newSubtask,"done");
         testCases.printEpicById(newEpic);
         testCases.printAllEpicSubtasks(newEpic);
+*/
 
 
     }
