@@ -1,5 +1,6 @@
 package ru.yandex.javacourse.kanban;
 
+import ru.yandex.javacourse.kanban.manager.InMemoryTaskManager;
 import ru.yandex.javacourse.kanban.manager.TaskManager;
 
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
 
 /*
-        TaskManager taskManager = new TaskManager();
+        InMemoryTaskManager taskManager = new InMemoryTaskManager();
 
 
         TestCases testCases = new TestCases(taskManager);
@@ -54,9 +55,10 @@ public class Main {
         testCases.updateSubtask(newSubtask,"done");
         testCases.printEpicById(newEpic);
         testCases.printAllEpicSubtasks(newEpic);
+
+        testCases.printHistory();
+
+
 */
-
-
-
     }
 }

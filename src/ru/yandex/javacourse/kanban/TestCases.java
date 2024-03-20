@@ -1,5 +1,6 @@
 package ru.yandex.javacourse.kanban;
 
+import ru.yandex.javacourse.kanban.manager.InMemoryTaskManager;
 import ru.yandex.javacourse.kanban.manager.TaskManager;
 import ru.yandex.javacourse.kanban.tasks.*;
 
@@ -7,9 +8,9 @@ import java.util.ArrayList;
 
 public class TestCases {
 
-    TaskManager manager;
+    InMemoryTaskManager manager;
 
-    public TestCases(TaskManager manager){
+    public TestCases(InMemoryTaskManager manager){
         this.manager = manager;
         addDefaultTasks();
     }
@@ -89,8 +90,6 @@ public class TestCases {
         System.out.println(manager.getEpicById(epicId));
     }
 
-
-
     private void addDefaultTasks(){
 
         System.out.println("==========ЗАПОЛЕННЕИЕ ТЕСТСОВЫМИ ДАННЫМИ==========");
@@ -114,5 +113,6 @@ public class TestCases {
         printAllSubTasks();
 
     }
+
 
 }

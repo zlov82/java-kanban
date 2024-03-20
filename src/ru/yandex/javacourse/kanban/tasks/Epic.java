@@ -1,7 +1,6 @@
 package ru.yandex.javacourse.kanban.tasks;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class Epic extends Task {
 
@@ -33,7 +32,8 @@ public class Epic extends Task {
     }
 
     public void deleteSubtask(int subtaskId) {
-        subtaskIdList.remove(subtaskId);
+        int index = subtaskIdList.indexOf(subtaskId);
+        subtaskIdList.remove(index);
     }
 
     @Override
