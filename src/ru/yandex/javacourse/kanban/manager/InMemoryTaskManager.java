@@ -7,12 +7,14 @@ import ru.yandex.javacourse.kanban.tasks.Epic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class InMemoryTaskManager implements TaskManager {
     private int uniqueId = 0;
-    private final HashMap<Integer, Task> tasksDb;
-    private final HashMap<Integer, Epic> epicsDb;
-    private final HashMap<Integer, Subtask> subtaskDb;
+    private final Map<Integer, Task> tasksDb;
+    private final Map<Integer, Epic> epicsDb;
+    private final Map<Integer, Subtask> subtaskDb;
 
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
@@ -47,8 +49,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTaskById(int taskId) {
-        historyManager.add(tasksDb.get(taskId));
-        return tasksDb.get(taskId);
+        Task task = tasksDb.get(taskId);
+        historyManager.add(task);
+        return task;
     }
 
     @Override
@@ -74,8 +77,7 @@ public class InMemoryTaskManager implements TaskManager {
         int id = epic.getId();
         Epic savedEpic = epicsDb.get(id);
         if (savedEpic != null) {
-            savedEpic.setTitle(epic.getTitle());
-            savedEpic.setDescription(epic.getDescription());
+            epicsDb.put(id,epic);
         }
     }
 
@@ -98,8 +100,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Epic getEpicById(int epicId) {
-        historyManager.add(epicsDb.get(epicId));
-        return epicsDb.get(epicId);
+        Epic epic = epicsDb.get(epicId);
+        historyManager.add(epic);
+        return epic;
     }
 
 
@@ -122,8 +125,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Subtask getSubtaskById(int subTaskId) {
-        historyManager.add(subtaskDb.get(subTaskId));
-        return subtaskDb.get(subTaskId);
+        Subtask subtask = subtaskDb.get(subTaskId);
+        historyManager.add(subtask);
+        return subtask;
     }
 
     @Override
@@ -170,8 +174,13 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public HistoryManager getHistory() {
-        return historyManager;
+    public List<Task> getHistory() {
+        return new ArrayList<>(historyManager.getHistory());
+    }
+
+    @Override
+    public void clearHistory() {
+        historyManager.clearHistory();
     }
 
     private int getUniqueId() {

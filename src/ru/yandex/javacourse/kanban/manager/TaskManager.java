@@ -5,13 +5,14 @@ import ru.yandex.javacourse.kanban.tasks.Subtask;
 import ru.yandex.javacourse.kanban.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface TaskManager {
     int addNewTask(Task task);
 
     void updateTask(Task newTask);
 
-    ArrayList<Task> getAllTasks();
+    List<Task> getAllTasks();
 
     Task getTaskById(int taskId);
 
@@ -25,7 +26,7 @@ public interface TaskManager {
 
     void deleteEpicById(int epicId);
 
-    ArrayList<Epic> getAllEpics();
+    List<Epic> getAllEpics();
 
     Epic getEpicById(int epicId);
 
@@ -33,14 +34,16 @@ public interface TaskManager {
 
     Subtask getSubtaskById(int subTaskId);
 
-    ArrayList<Subtask> getAllTasksByEpic(int epicId);
+    List<Subtask> getAllTasksByEpic(int epicId);
 
     void updateSubtask(Subtask subtask);
 
     void deleteSubtaskById(int subtaskId);
 
-    ArrayList<Subtask> getAllSubTasks();
+    List<Subtask> getAllSubTasks();
 
-    HistoryManager getHistory();
+    List<Task> getHistory();
+
+    void clearHistory();
 
 }

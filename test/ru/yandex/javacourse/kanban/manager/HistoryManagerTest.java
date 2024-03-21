@@ -1,11 +1,11 @@
 package ru.yandex.javacourse.kanban.manager;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.javacourse.kanban.tasks.Epic;
 import ru.yandex.javacourse.kanban.tasks.Subtask;
 import ru.yandex.javacourse.kanban.tasks.Task;
+import ru.yandex.javacourse.kanban.tasks.TaskStatus;
 
 import java.util.List;
 
@@ -62,7 +62,7 @@ class HistoryManagerTest {
 
 
     @Test
-    void History() {
+    void inHistoryShouldNotChangeTask() {
         final String title = "TITLE";
         final String description = "DESCRIPTION";
 
@@ -75,12 +75,35 @@ class HistoryManagerTest {
 
         assertEquals("NEW_TITLE", updatedTask.getTitle(), "Задача не обновилась");
 
-        HistoryManager historyManager = taskManager.getHistory();
-        List<Task> historyList = historyManager.getHistory();
+        List<Task> historyList = taskManager.getHistory();
         Task historyTask = historyList.get(0);
 
         assertEquals(title, historyTask.getTitle(), "В историю попала обновленная задача");
 
+    }
+
+    @Test
+    void inHistoryShouldNotChangeEpicAndSubtask() {
+        final String titleEpic = "TITLE_EPIC";
+        final String titleSubtask = "TITLE_SUBTASK";
+        final String description = "DESCRIPTION";
+
+        final int epicId = taskManager.addNewEpic(new Epic(titleEpic));
+        final int subtaskId = taskManager.addNewSubtask(new Subtask(titleSubtask,description,epicId));
+
+        taskManager.getEpicById(epicId);        //Эпик попал в историю
+        taskManager.getSubtaskById(subtaskId);  //Подзадача эпика попала в историю
+
+        Epic updatedEpic = new Epic(epicId,"NEW_TITLE_EPIC");
+        taskManager.updateEpic(updatedEpic);
+        Subtask updatedSubtask = new Subtask(subtaskId,"NEW_TITLE,SUBTASK","NEW_TITLE,DESCRIPTION"
+                ,epicId, TaskStatus.IN_PROGRESS.toString());
+        taskManager.updateSubtask(updatedSubtask);
+
+        final List<Task> history = taskManager.getHistory();
+
+        assertEquals(titleEpic, history.get(0).getTitle(), "В истории обновленный эпик");
+        assertEquals(titleSubtask, history.get(1).getTitle(), "В истории обновленная подзадача");
     }
 
     void clearBd(){
@@ -89,6 +112,9 @@ class HistoryManagerTest {
         for (Epic epic : epics) {
             taskManager.deleteEpicById(epic.getId());
         }
+        taskManager.clearHistory();
     }
+
+
 
 }
