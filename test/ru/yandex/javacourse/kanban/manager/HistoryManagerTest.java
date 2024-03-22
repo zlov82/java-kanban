@@ -1,6 +1,5 @@
 package ru.yandex.javacourse.kanban.manager;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.javacourse.kanban.tasks.Epic;
 import ru.yandex.javacourse.kanban.tasks.Subtask;
@@ -13,30 +12,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HistoryManagerTest {
 
-    static TaskManager taskManager = Managers.getDefault();
-
-    @BeforeEach
-    void beforeEach(){
-        clearBd();
-        final int task1 = taskManager.addNewTask(new Task("Помыть посуду", "На этой неделе"));
-        final int task2 = taskManager.addNewTask(new Task("Купить билеты на камчатку", "С 18 по 28 июня"));
-        final int task3 = taskManager.addNewTask(new Task("Съездить к родителям", "Не забудь подарки"));
-        final int task4 = taskManager.addNewTask(new Task("Постричься", "Совсем зарос"));
-
-        final int epic1 = taskManager.addNewEpic(new Epic("Загран паспорт"));
-        final int epic2 = taskManager.addNewEpic(new Epic("Обучение Java 5 спринт"));
-
-        final int subtask1 = taskManager.addNewSubtask(new Subtask("Заявление на госуслугах", "Всполмнить пароль", epic1));
-        final int subtask2 = taskManager.addNewSubtask(new Subtask("Госпошлина", "Оплатить",epic1));
-        final int subtask3 = taskManager.addNewSubtask(new Subtask("Запись в МФЦ", "не профукай",epic1));
-
-        final int subtask4 = taskManager.addNewSubtask(new Subtask("Госпошлина", "Оплатить",epic2));
-        final int subtask5 = taskManager.addNewSubtask(new Subtask("Финальное задание спринта", "",epic2)); // 11
-        final int subtask6 = taskManager.addNewSubtask(new Subtask("Покрыть всё тестами", "",epic2)); // 12
-    }
-
     @Test
     void shouldBe10History() {
+        TaskManager taskManager = Managers.getDefault();
+        addManyTasks(taskManager);
+
         List<Task> tasks = taskManager.getAllTasks();
         List<Epic> epics = taskManager.getAllEpics();
         List<Subtask> subtasks = taskManager.getAllSubTasks();
@@ -63,13 +43,15 @@ class HistoryManagerTest {
 
     @Test
     void inHistoryShouldNotChangeTask() {
+        TaskManager taskManager = Managers.getDefault();
+
         final String title = "TITLE";
         final String description = "DESCRIPTION";
 
-        final int taskId = taskManager.addNewTask(new Task(title,description));
+        final int taskId = taskManager.addNewTask(new Task(title, description));
         taskManager.getTaskById(taskId); //в историю попал таск с title = "TITLE"
 
-        Task updatedTask = new Task(taskId,"NEW_TITLE", "NEW_DESCRIPTION");
+        Task updatedTask = new Task(taskId, "NEW_TITLE", "NEW_DESCRIPTION");
         taskManager.updateTask(updatedTask);
         updatedTask = taskManager.getTaskById(taskId);
 
@@ -84,20 +66,22 @@ class HistoryManagerTest {
 
     @Test
     void inHistoryShouldNotChangeEpicAndSubtask() {
+        TaskManager taskManager = Managers.getDefault();
+
         final String titleEpic = "TITLE_EPIC";
         final String titleSubtask = "TITLE_SUBTASK";
         final String description = "DESCRIPTION";
 
         final int epicId = taskManager.addNewEpic(new Epic(titleEpic));
-        final int subtaskId = taskManager.addNewSubtask(new Subtask(titleSubtask,description,epicId));
+        final int subtaskId = taskManager.addNewSubtask(new Subtask(titleSubtask, description, epicId));
 
         taskManager.getEpicById(epicId);        //Эпик попал в историю
         taskManager.getSubtaskById(subtaskId);  //Подзадача эпика попала в историю
 
-        Epic updatedEpic = new Epic(epicId,"NEW_TITLE_EPIC");
+        Epic updatedEpic = new Epic(epicId, "NEW_TITLE_EPIC");
         taskManager.updateEpic(updatedEpic);
-        Subtask updatedSubtask = new Subtask(subtaskId,"NEW_TITLE,SUBTASK","NEW_TITLE,DESCRIPTION"
-                ,epicId, TaskStatus.IN_PROGRESS.toString());
+        Subtask updatedSubtask = new Subtask(subtaskId, "NEW_TITLE,SUBTASK", "NEW_TITLE,DESCRIPTION"
+                , epicId, TaskStatus.IN_PROGRESS.toString());
         taskManager.updateSubtask(updatedSubtask);
 
         final List<Task> history = taskManager.getHistory();
@@ -106,15 +90,24 @@ class HistoryManagerTest {
         assertEquals(titleSubtask, history.get(1).getTitle(), "В истории обновленная подзадача");
     }
 
-    void clearBd(){
-        taskManager.deleteAllTasks();
-        List<Epic> epics = taskManager.getAllEpics();
-        for (Epic epic : epics) {
-            taskManager.deleteEpicById(epic.getId());
-        }
-        taskManager.clearHistory();
-    }
 
+    void addManyTasks(TaskManager taskManager) {
+        final int task1 = taskManager.addNewTask(new Task("Помыть посуду", "На этой неделе"));
+        final int task2 = taskManager.addNewTask(new Task("Купить билеты на камчатку", "С 18 по 28 июня"));
+        final int task3 = taskManager.addNewTask(new Task("Съездить к родителям", "Не забудь подарки"));
+        final int task4 = taskManager.addNewTask(new Task("Постричься", "Совсем зарос"));
+
+        final int epic1 = taskManager.addNewEpic(new Epic("Загран паспорт"));
+        final int epic2 = taskManager.addNewEpic(new Epic("Обучение Java 5 спринт"));
+
+        final int subtask1 = taskManager.addNewSubtask(new Subtask("Заявление на госуслугах", "Всполмнить пароль", epic1));
+        final int subtask2 = taskManager.addNewSubtask(new Subtask("Госпошлина", "Оплатить", epic1));
+        final int subtask3 = taskManager.addNewSubtask(new Subtask("Запись в МФЦ", "не профукай", epic1));
+
+        final int subtask4 = taskManager.addNewSubtask(new Subtask("Госпошлина", "Оплатить", epic2));
+        final int subtask5 = taskManager.addNewSubtask(new Subtask("Финальное задание спринта", "", epic2)); // 11
+        final int subtask6 = taskManager.addNewSubtask(new Subtask("Покрыть всё тестами", "", epic2)); // 12
+    }
 
 
 }

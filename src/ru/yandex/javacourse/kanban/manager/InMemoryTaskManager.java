@@ -18,7 +18,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
-
     public InMemoryTaskManager() {
         tasksDb = new HashMap<>();
         epicsDb = new HashMap<>();
@@ -74,10 +73,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpic(Epic epic) {
-        int id = epic.getId();
-        Epic savedEpic = epicsDb.get(id);
+        int savedEpicId = epic.getId();
+        Epic savedEpic = epicsDb.get(savedEpicId);
         if (savedEpic != null) {
-            epicsDb.put(id,epic);
+            savedEpic.setTitle(epic.getTitle());
+            savedEpic.setDescription(epic.getDescription());
+            // статус тут не изменяется (только при обновлении сабтасков)
+            epicsDb.put(savedEpicId, savedEpic);
         }
     }
 
@@ -101,12 +103,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic getEpicById(int epicId) {
         Epic epic = epicsDb.get(epicId);
-        historyManager.add(epic);
+        historyManager.add(new Epic(epic)); //в историю помещается дубль эпика
         return epic;
     }
-
-
-
 
     /********* ПОДЗАДАЧИ *********/
     @Override
@@ -178,11 +177,6 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(historyManager.getHistory());
     }
 
-    @Override
-    public void clearHistory() {
-        historyManager.clearHistory();
-    }
-
     private int getUniqueId() {
         return ++uniqueId;
     }
@@ -220,6 +214,5 @@ public class InMemoryTaskManager implements TaskManager {
             savedEpic.setStatus(epicStatus);
         }
     }
-
 
 }

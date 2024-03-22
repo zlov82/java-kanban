@@ -23,6 +23,13 @@ public class Epic extends Task {
         this.status = status;
     }
 
+    public Epic(Epic original) { // Копирование класса для истории
+        this.id = original.id;
+        this.title = original.title;
+        this.status = original.status;
+        this.subtaskIdList = original.subtaskIdList;
+    }
+
     public void addNewSubtask(int subtaskId) {
         subtaskIdList.add(subtaskId);
     }
@@ -35,6 +42,7 @@ public class Epic extends Task {
         int index = subtaskIdList.indexOf(subtaskId);
         subtaskIdList.remove(index);
     }
+
 
     @Override
     public String toString() {

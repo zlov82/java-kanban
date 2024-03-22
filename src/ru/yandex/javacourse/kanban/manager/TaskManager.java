@@ -4,7 +4,6 @@ import ru.yandex.javacourse.kanban.tasks.Epic;
 import ru.yandex.javacourse.kanban.tasks.Subtask;
 import ru.yandex.javacourse.kanban.tasks.Task;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface TaskManager {
@@ -43,7 +42,5 @@ public interface TaskManager {
     List<Subtask> getAllSubTasks();
 
     List<Task> getHistory();
-
-    void clearHistory();
 
 }
