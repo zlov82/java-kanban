@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class HistoryManagerTest {
 
     @Test
-    void shouldBe10History() {
+    void shouldBeHistory() {
         TaskManager taskManager = Managers.getDefault();
         addManyTasks(taskManager);
 
@@ -22,7 +22,6 @@ class HistoryManagerTest {
         List<Subtask> subtasks = taskManager.getAllSubTasks();
 
         final int countAllTasks = tasks.size() + epics.size() + subtasks.size();
-        assertTrue(countAllTasks > 10, "Всего меньше 10 задач");
 
         HistoryManager historyManager = Managers.getDefaultHistory();
 
@@ -37,30 +36,39 @@ class HistoryManagerTest {
         }
 
         List<Task> history = historyManager.getHistory();
-        assertTrue(history.size() == 10, "История не равна 10 задачам");
+        assertEquals(countAllTasks, history.size(), "История не равна количеству запрошенных задач");
     }
 
 
     @Test
-    void inHistoryShouldNotChangeTask() {
+    void inHistoryShouldChangeTask() {
         TaskManager taskManager = Managers.getDefault();
 
         final String title = "TITLE";
+        final String updatedTitle = "NEW_TITLE";
         final String description = "DESCRIPTION";
 
         final int taskId = taskManager.addNewTask(new Task(title, description));
         taskManager.getTaskById(taskId); //в историю попал таск с title = "TITLE"
 
-        Task updatedTask = new Task(taskId, "NEW_TITLE", "NEW_DESCRIPTION");
+        List<Task> historyList = taskManager.getHistory();
+        Task historyTask = historyList.get(0);
+        assertEquals(title, historyTask.getTitle(), "Ожидалось другое название задачи");
+
+        Task updatedTask = new Task(taskId, updatedTitle, "NEW_DESCRIPTION");
         taskManager.updateTask(updatedTask);
         updatedTask = taskManager.getTaskById(taskId);
 
         assertEquals("NEW_TITLE", updatedTask.getTitle(), "Задача не обновилась");
 
-        List<Task> historyList = taskManager.getHistory();
-        Task historyTask = historyList.get(0);
+        historyList.clear();
+        historyList = taskManager.getHistory();
 
-        assertEquals(title, historyTask.getTitle(), "В историю попала обновленная задача");
+        assertTrue(historyList.size() == 1, "Старая история не удалилась");
+
+        historyTask = historyList.get(0);
+
+        assertEquals(updatedTitle, historyTask.getTitle(), "В историю попала обновленная задача");
 
     }
 
