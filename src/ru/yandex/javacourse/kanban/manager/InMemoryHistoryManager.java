@@ -25,9 +25,9 @@ public class InMemoryHistoryManager implements HistoryManager {
             return;
         }
         int id = task.getId();
-        remove(id); //удаляем из мапы и пересобираем связи между нодами
-        historyDb.put(id, linkLast(task));
-
+        remove(id);     //удаляем из мапы и пересобираем связи между нодами
+        linkLast(task); // укладываем в tail новую ноду
+        historyDb.put(id, tail);
     }
 
     @Override
@@ -60,31 +60,24 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (head == node) { // удаляемая нода является головой
             head = nextNode;
         }
-        if (tail == node) { // удяляемая нода - хвост
+        if (tail == node) { // удаляемая нода - хвост
             tail = prevNode;
         }
 
     }
 
-    private Node<Task> linkLast(Task task) {
+    private void linkLast(Task task) {
         final Node<Task> oldTail = tail;
-        final Node<Task> oldHead = head;
         final Node<Task> newNode;
 
-        if (oldTail != null) {
-            newNode = new Node<>(oldTail, task, null);
-            tail = newNode;
-            oldTail.next = newNode;
-        } else {
-            newNode = new Node<>(null, task, oldHead);
+        if (oldTail == null) { // Добавление 1ой ноды в список
+            newNode = new Node<>(null, task, null);
             head = newNode;
-            if (oldHead == null) {
-                tail = newNode;
-            } else {
-                oldHead.prev = newNode;
-            }
+        } else { // Добавление 2ой и последующих нод в список
+            newNode = new Node<>(oldTail, task, null);
+            oldTail.next = newNode;
         }
-        return newNode;
+        tail = newNode;
     }
 
     private List<Task> getTasks() {

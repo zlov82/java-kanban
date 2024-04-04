@@ -6,7 +6,10 @@ import ru.yandex.javacourse.kanban.tasks.Subtask;
 import ru.yandex.javacourse.kanban.tasks.Task;
 import ru.yandex.javacourse.kanban.tasks.TaskStatus;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -96,6 +99,35 @@ class HistoryManagerTest {
 
         assertEquals(titleEpic, history.get(0).getTitle(), "В истории обновленный эпик");
         assertEquals(titleSubtask, history.get(1).getTitle(), "В истории обновленная подзадача");
+    }
+
+    @Test
+    void ShouldBeUniqueIdsInHistory() {
+        TaskManager taskManager = Managers.getDefault();
+        addManyTasks(taskManager);
+
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        List<Task> tasks = taskManager.getAllTasks();
+
+        for (int i = 0; i < 2; i++) { // запрашиваем все таски два раза
+            for (Task task : tasks) {
+                historyManager.add(task);
+            }
+        }
+
+        List<Task> historyList = historyManager.getHistory();
+
+        assertTrue(tasks.size() == historyList.size(), "Количество задач не совпадает с количеством" +
+                " в истории");
+
+        Set<Integer> taskNumbers = new HashSet<>();
+        for (Task task : historyList) {
+            taskNumbers.add(task.getId());
+        }
+
+        assertTrue(historyList.size() == taskNumbers.size(), "Провалена проверка на уникальность" +
+                " идентификаторов в истории");
+
     }
 
 
