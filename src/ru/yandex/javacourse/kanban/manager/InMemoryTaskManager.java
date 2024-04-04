@@ -1,9 +1,9 @@
 package ru.yandex.javacourse.kanban.manager;
 
+import ru.yandex.javacourse.kanban.tasks.Epic;
 import ru.yandex.javacourse.kanban.tasks.Subtask;
 import ru.yandex.javacourse.kanban.tasks.Task;
 import ru.yandex.javacourse.kanban.tasks.TaskStatus;
-import ru.yandex.javacourse.kanban.tasks.Epic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,7 +150,7 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
         Subtask savedSubtask = subtaskDb.get(subtask.getId());
-        if (savedSubtask ==null) {
+        if (savedSubtask == null) {
             return;
         }
         subtaskDb.put(subtask.getId(), subtask);
