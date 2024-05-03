@@ -70,12 +70,21 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", status=" + status +
-                '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append(id)
+                .append(",")
+                .append(TaskTypes.TASK)
+                .append(",")
+                .append(title)
+                .append(",")
+                .append(status)
+                .append(",");
+        if (description != null) {
+            sb.append(description);
+        }
+                sb.append(",");
+
+        return sb.toString();
     }
 
 

@@ -39,12 +39,23 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return "Subtask{" +
-                "id=" + id +
-                ". epicId=" + epicId +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", status=" + status +
-                '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append(id)
+                .append(",")
+                .append(TaskTypes.SUBTASK)
+                .append(",")
+                .append(title)
+                .append(",")
+                .append(status)
+                .append(",");
+
+        if (description != null){
+            sb.append(description);
+        }
+                sb.append(",")
+                .append(epicId);
+
+
+        return sb.toString();
     }
 }

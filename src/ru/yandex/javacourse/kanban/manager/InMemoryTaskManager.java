@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int uniqueId = 0;
-    private final Map<Integer, Task> tasksDb;
-    private final Map<Integer, Epic> epicsDb;
-    private final Map<Integer, Subtask> subtaskDb;
+    protected int uniqueId = 0;
+    protected final Map<Integer, Task> tasksDb;
+    protected final Map<Integer, Epic> epicsDb;
+    protected final Map<Integer, Subtask> subtaskDb;
 
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
@@ -27,7 +27,9 @@ public class InMemoryTaskManager implements TaskManager {
     /********* МЕТОДЫ ОБЫЧНЫХ ЗАДАЧ *********/
     @Override
     public int addNewTask(Task task) {
-        task.setId(getUniqueId());
+        if (task.getId() == 0) {
+            task.setId(getUniqueId());
+        }
         tasksDb.put(task.getId(), task);
         return task.getId();
     }
@@ -66,7 +68,9 @@ public class InMemoryTaskManager implements TaskManager {
     /********* ЭПИКИ *********/
     @Override
     public int addNewEpic(Epic epic) {
-        epic.setId(getUniqueId());
+        if (epic.getId() == 0) {
+            epic.setId(getUniqueId());
+        }
         epicsDb.put(epic.getId(), epic);
         return epic.getId();
     }
@@ -112,11 +116,20 @@ public class InMemoryTaskManager implements TaskManager {
     public Integer addNewSubtask(Subtask subtask) {
         Epic savedEpic = epicsDb.get(subtask.getEpicId());
         if (savedEpic != null) {
-            final int subtaskId = getUniqueId();
+            int subtaskId;
+            boolean updateEpicStatus = false;
+            if (subtask.getId() == 0) {
+                subtaskId = getUniqueId();
+                updateEpicStatus = true;
+            } else {
+                subtaskId = subtask.getId();
+            }
             subtask.setId(subtaskId);
             subtaskDb.put(subtaskId, subtask);
             savedEpic.addNewSubtask(subtaskId);
-            updateEpicStatus(savedEpic.getId());
+            if (updateEpicStatus) {
+                updateEpicStatus(savedEpic.getId());
+            }
             return subtaskId;
         }
         return null;
