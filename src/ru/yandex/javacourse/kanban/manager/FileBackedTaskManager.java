@@ -14,9 +14,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
         Task task = new Task();
 
-        try (Reader reader = new FileReader(file) ; BufferedReader buffer = new BufferedReader(reader)) {
-            while (buffer.ready()) {
-              fromString(buffer.readLine(), fileBackedTaskManager);
+        try {
+            String fileInString = Files.readString(file.toPath());
+            String[] tasksLines = fileInString.split("\n");
+            for (String line: tasksLines) {
+                fromString(line, fileBackedTaskManager);
             }
         } catch (ManagerSaveException e) {
             throw new ManagerSaveException();
