@@ -12,7 +12,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public static FileBackedTaskManager loadFromFile(File file) throws ManagerSaveException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
-        Task task = new Task();
 
         try {
             String fileInString = Files.readString(file.toPath());
@@ -20,10 +19,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             for (String line: tasksLines) {
                 fromString(line, fileBackedTaskManager);
             }
-        } catch (ManagerSaveException e) {
-            throw new ManagerSaveException();
         } catch (IOException e) {
-            System.out.println("Ошибка доступа к файлу");
+            throw new ManagerSaveException(e);
         }
 
         return fileBackedTaskManager;
@@ -139,7 +136,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return super.getHistory();
     }
 
-    private void save() throws ManagerSaveException {
+    private void save() {
         StringBuilder stringToFile = new StringBuilder();
 
         for (Task task : super.tasksDb.values()) {
@@ -156,15 +153,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         try (Writer writer = new FileWriter(pathToFileDb)){
             writer.write(stringToFile.toString());
-        } catch (ManagerSaveException e) {
-            throw new ManagerSaveException();
         } catch (IOException e) {
-            System.out.println("Ошибка доступа к файлу");
+            throw new ManagerSaveException(e);
         }
     }
 
     private static void fromString(String fileLine, FileBackedTaskManager manager) {
-            Task task = new Task();
+            Task task;
             String[] lines = fileLine.split(",");
 
             /*
