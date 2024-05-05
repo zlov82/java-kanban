@@ -15,9 +15,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         try {
             String fileInString = Files.readString(file.toPath());
-            String[] tasksLines = fileInString.split("\n");
-            for (String line: tasksLines) {
-                fromString(line, fileBackedTaskManager);
+            if (!fileInString.isEmpty()) {
+                String[] tasksLines = fileInString.split("\n");
+                for (String line: tasksLines) {
+                    fromString(line, fileBackedTaskManager);
+                }
             }
         } catch (IOException e) {
             throw new ManagerSaveException(e);

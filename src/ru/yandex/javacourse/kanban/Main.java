@@ -15,8 +15,8 @@ public class Main {
     public static void main(String[] args) {
 
         TaskManager taskManager = FileBackedTaskManager.loadFromFile(new File("res.csv"));
-/*
-        TaskManager taskManager = Managers.getDefault();
+
+        //TaskManager taskManager = Managers.getDefault();
 
      final int task1 = taskManager.addNewTask(new Task("Помыть посуду", "На этой неделе"));
         final int task2 = taskManager.addNewTask(new Task("Купить билеты на камчатку", "С 18 по 28 июня"));
@@ -32,7 +32,7 @@ public class Main {
 
         final int subtask4 = taskManager.addNewSubtask(new Subtask("Госпошлина", "Оплатить", epic2));
         final int subtask5 = taskManager.addNewSubtask(new Subtask("Финальное задание спринта", "", epic2)); // 11
-        final int subtask6 = taskManager.addNewSubtask(new Subtask("Покрыть всё тестами", "", epic2)); // 12*/
+        final int subtask6 = taskManager.addNewSubtask(new Subtask("Покрыть всё тестами", "", epic2)); // 12
 
 
     }
