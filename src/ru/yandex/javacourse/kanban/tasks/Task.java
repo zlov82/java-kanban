@@ -9,7 +9,6 @@ public class Task {
     protected String description;
     protected TaskStatus status;
 
-
     //Конструктор с полями по умолчанию
     public Task() {
 
@@ -82,11 +81,10 @@ public class Task {
         if (description != null) {
             sb.append(description);
         }
-                sb.append(",");
+        sb.append(",");
 
         return sb.toString();
     }
-
 
     @Override
     public int hashCode() {

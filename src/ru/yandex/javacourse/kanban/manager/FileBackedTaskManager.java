@@ -17,7 +17,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             String fileInString = Files.readString(file.toPath());
             if (!fileInString.isEmpty()) {
                 String[] tasksLines = fileInString.split("\n");
-                for (String line: tasksLines) {
+                for (String line : tasksLines) {
                     fromString(line, fileBackedTaskManager);
                 }
             }
@@ -153,7 +153,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             stringToFile.append(task.toString()).append("\n");
         }
 
-        try (Writer writer = new FileWriter(pathToFileDb)){
+        try (Writer writer = new FileWriter(pathToFileDb)) {
             writer.write(stringToFile.toString());
         } catch (IOException e) {
             throw new ManagerSaveException(e);
@@ -161,8 +161,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private static void fromString(String fileLine, FileBackedTaskManager manager) {
-            Task task;
-            String[] lines = fileLine.split(",");
+        Task task;
+        String[] lines = fileLine.split(",");
 
             /*
             0 - id
@@ -178,7 +178,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             manager.uniqueId = taskId;
         }
 
-        switch (TaskTypes.valueOf(lines[1].toUpperCase())){
+        switch (TaskTypes.valueOf(lines[1].toUpperCase())) {
             case TaskTypes.TASK:
                 task = new Task(taskId, lines[2], lines[4], TaskStatus.valueOf(lines[3]).toString());
                 manager.addNewTask(task);
@@ -188,7 +188,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 manager.addNewEpic((Epic) task);
                 break;
             case TaskTypes.SUBTASK:
-                task = new Subtask(taskId,lines[2], lines[4],Integer.parseInt(lines[5]) ,TaskStatus.valueOf(lines[3]).toString());
+                task = new Subtask(taskId, lines[2], lines[4], Integer.parseInt(lines[5]), TaskStatus.valueOf(lines[3]).toString());
                 manager.addNewSubtask((Subtask) task);
                 break;
         }

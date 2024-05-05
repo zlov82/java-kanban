@@ -43,7 +43,6 @@ public class Epic extends Task {
         subtaskIdList.remove(index);
     }
 
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -56,11 +55,10 @@ public class Epic extends Task {
                 .append(status)
                 .append(",");
 
-        if (description != null){
+        if (description != null) {
             sb.append(description);
         }
-               sb.append(",");
-
+        sb.append(",");
         return sb.toString();
     }
 
