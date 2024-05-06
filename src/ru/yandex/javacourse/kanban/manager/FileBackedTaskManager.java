@@ -11,22 +11,27 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File pathToFileDb;
 
     public static FileBackedTaskManager loadFromFile(File file) {
-
-        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
-
+        final FileBackedTaskManager manager = new FileBackedTaskManager(file);
         try {
-            String fileInString = Files.readString(file.toPath());
+            final String fileInString = Files.readString(file.toPath());
+
             if (!fileInString.isEmpty()) {
                 String[] tasksLines = fileInString.split(System.lineSeparator());
                 for (String line : tasksLines) {
-                    fromString(line, fileBackedTaskManager);
+                    Task task = taskFromString(line);
+
+                    int taskId = task.getId();
+                    if (taskId > manager.uniqueId) {
+                        manager.uniqueId = taskId;
+                    }
+                    manager.addTaskToManager(task);
                 }
             }
         } catch (IOException e) {
             throw new ManagerSaveException(e);
         }
 
-        return fileBackedTaskManager;
+        return manager;
     }
 
 
@@ -100,7 +105,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     protected void save() {
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathToFileDb))){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathToFileDb))) {
             for (Task task : super.tasksDb.values()) {
                 writer.write(toString(task));
                 writer.newLine();
@@ -118,8 +123,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    private static void fromString(String fileLine, FileBackedTaskManager manager) {
-        Task task;
+    private static Task taskFromString(String fileLine) {
+        Task task = new Task();
         String[] lines = fileLine.split(",");
 
             /*
@@ -130,26 +135,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             4 - description
             5 (если тип subtask) - epicId
              */
-
-        int taskId = Integer.parseInt(lines[0]);
-        if (manager.uniqueId < taskId) {
-            manager.uniqueId = taskId;
-        }
+        final Integer taskId = Integer.parseInt(lines[0]);
 
         switch (TaskTypes.valueOf(lines[1].toUpperCase())) {
             case TaskTypes.TASK:
                 task = new Task(taskId, lines[2], lines[4], TaskStatus.valueOf(lines[3]).toString());
-                manager.addNewTask(task);
-                break;
+                return task;
             case TaskTypes.EPIC:
                 task = new Epic(taskId, lines[2], TaskStatus.valueOf(lines[3]));
-                manager.addNewEpic((Epic) task);
-                break;
+                return task;
             case TaskTypes.SUBTASK:
                 task = new Subtask(taskId, lines[2], lines[4], Integer.parseInt(lines[5]), TaskStatus.valueOf(lines[3]).toString());
-                manager.addNewSubtask((Subtask) task);
-                break;
+                return task;
         }
+        return task;
     }
 
     private void addTaskToManager(Task task) {
