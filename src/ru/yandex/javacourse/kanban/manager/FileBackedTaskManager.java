@@ -5,18 +5,19 @@ import ru.yandex.javacourse.kanban.tasks.*;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
+    private final File pathToFileDb;
 
-    public static FileBackedTaskManager loadFromFile(File file) throws ManagerSaveException {
+    public static FileBackedTaskManager loadFromFile(File file) {
+
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
 
         try {
             String fileInString = Files.readString(file.toPath());
             if (!fileInString.isEmpty()) {
-                String[] tasksLines = fileInString.split("\n");
+                String[] tasksLines = fileInString.split(System.lineSeparator());
                 for (String line : tasksLines) {
                     fromString(line, fileBackedTaskManager);
                 }
@@ -28,34 +29,23 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return fileBackedTaskManager;
     }
 
-    private final String pathToFileDb;
 
     public FileBackedTaskManager(File file) {
         super();
-        this.pathToFileDb = file.toString();
+        this.pathToFileDb = file;
     }
 
     @Override
     public int addNewTask(Task task) {
-        int ret = super.addNewTask(task);
+        int taskId = super.addNewTask(task);
         save();
-        return ret;
+        return taskId;
     }
 
     @Override
     public void updateTask(Task newTask) {
         super.updateTask(newTask);
         save();
-    }
-
-    @Override
-    public ArrayList<Task> getAllTasks() {
-        return super.getAllTasks();
-    }
-
-    @Override
-    public Task getTaskById(int taskId) {
-        return super.getTaskById(taskId);
     }
 
     @Override
@@ -72,9 +62,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public int addNewEpic(Epic epic) {
-        int ret = super.addNewEpic(epic);
+        int epicId = super.addNewEpic(epic);
         save();
-        return ret;
+        return epicId;
     }
 
     @Override
@@ -90,30 +80,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public ArrayList<Epic> getAllEpics() {
-        return super.getAllEpics();
-    }
-
-    @Override
-    public Epic getEpicById(int epicId) {
-        return super.getEpicById(epicId);
-    }
-
-    @Override
     public Integer addNewSubtask(Subtask subtask) {
-        Integer ret = super.addNewSubtask(subtask);
+        Integer subtaskId = super.addNewSubtask(subtask);
         save();
-        return ret;
-    }
-
-    @Override
-    public Subtask getSubtaskById(int subTaskId) {
-        return super.getSubtaskById(subTaskId);
-    }
-
-    @Override
-    public ArrayList<Subtask> getAllTasksByEpic(int epicId) {
-        return super.getAllTasksByEpic(epicId);
+        return subtaskId;
     }
 
     @Override
@@ -128,33 +98,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
-    @Override
-    public ArrayList<Subtask> getAllSubTasks() {
-        return super.getAllSubTasks();
-    }
+    protected void save() {
 
-    @Override
-    public List<Task> getHistory() {
-        return super.getHistory();
-    }
-
-    private void save() {
-        StringBuilder stringToFile = new StringBuilder();
-
-        for (Task task : super.tasksDb.values()) {
-            stringToFile.append(task.toString()).append("\n");
-        }
-
-        for (Task task : super.epicsDb.values()) {
-            stringToFile.append(task.toString()).append("\n");
-        }
-
-        for (Task task : super.subtaskDb.values()) {
-            stringToFile.append(task.toString()).append("\n");
-        }
-
-        try (Writer writer = new FileWriter(pathToFileDb)) {
-            writer.write(stringToFile.toString());
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathToFileDb))){
+            for (Task task : super.tasksDb.values()) {
+                writer.write(toString(task));
+                writer.newLine();
+            }
+            for (Task task : super.epicsDb.values()) {
+                writer.write(toString(task));
+                writer.newLine();
+            }
+            for (Task task : super.subtaskDb.values()) {
+                writer.write(toString(task));
+                writer.newLine();
+            }
         } catch (IOException e) {
             throw new ManagerSaveException(e);
         }
@@ -192,5 +150,51 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 manager.addNewSubtask((Subtask) task);
                 break;
         }
+    }
+
+    private void addTaskToManager(Task task) {
+        final int id = task.getId();
+        switch (task.getType()) {
+            case TaskTypes.TASK:
+                super.tasksDb.put(id, task);
+                break;
+            case TaskTypes.EPIC:
+                super.epicsDb.put(id, (Epic) task);
+                break;
+            case TaskTypes.SUBTASK:
+                Subtask subtask = (Subtask) task;
+                final int epicId = subtask.getEpicId();
+                super.subtaskDb.put(id, subtask);
+
+                //Добавление подзадачи во внутренний список эпика
+                Epic epic = epicsDb.get(epicId);
+                epic.addNewSubtask(id);
+                break;
+        }
+    }
+
+    public static String toString(Task task) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(task.getId())
+                .append(",")
+                .append(task.getType())
+                .append(",")
+                .append(task.getTitle())
+                .append(",")
+                .append(task.getStatus())
+                .append(",");
+
+        String description = task.getDescription();
+        if (description != null) {
+            sb.append(description);
+        }
+        sb.append(",");
+
+        if (task.getType() == TaskTypes.SUBTASK) {
+            Subtask subtask = (Subtask) task;
+            Integer epicId = subtask.getEpicId();
+            sb.append(epicId);
+        }
+        return sb.toString();
     }
 }

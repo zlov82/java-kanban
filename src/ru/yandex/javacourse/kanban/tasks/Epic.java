@@ -45,21 +45,16 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(id)
-                .append(",")
-                .append(TaskTypes.EPIC)
-                .append(",")
-                .append(title)
-                .append(",")
-                .append(status)
-                .append(",");
+        return "Epic{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", status=" + status + '\'' +
+                ", subtaskIds=" + subtaskIdList +
+                '}';
+    }
 
-        if (description != null) {
-            sb.append(description);
-        }
-        sb.append(",");
-        return sb.toString();
+    public TaskTypes getType() {
+        return TaskTypes.EPIC;
     }
 
 }

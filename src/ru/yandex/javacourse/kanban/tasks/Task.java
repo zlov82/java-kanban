@@ -69,21 +69,12 @@ public class Task {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(id)
-                .append(",")
-                .append(TaskTypes.TASK)
-                .append(",")
-                .append(title)
-                .append(",")
-                .append(status)
-                .append(",");
-        if (description != null) {
-            sb.append(description);
-        }
-        sb.append(",");
-
-        return sb.toString();
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                '}';
     }
 
     @Override
@@ -97,5 +88,9 @@ public class Task {
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
         return id == task.id;
+    }
+
+    public TaskTypes getType() {
+        return TaskTypes.TASK;
     }
 }
