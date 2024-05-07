@@ -4,7 +4,6 @@ public class Subtask extends Task {
 
     private int epicId;
 
-
     public Subtask(String title, String description, int epicId) {
         this.title = title;
         this.description = description;
@@ -28,7 +27,6 @@ public class Subtask extends Task {
         this.status = TaskStatus.valueOf(status.toUpperCase());
     }
 
-
     public int getEpicId() {
         return epicId;
     }
@@ -46,5 +44,9 @@ public class Subtask extends Task {
                 ", description='" + description + '\'' +
                 ", status=" + status +
                 '}';
+    }
+
+    public TaskTypes getType() {
+        return TaskTypes.SUBTASK;
     }
 }

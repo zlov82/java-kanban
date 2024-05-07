@@ -9,7 +9,6 @@ public class Task {
     protected String description;
     protected TaskStatus status;
 
-
     //Конструктор с полями по умолчанию
     public Task() {
 
@@ -78,7 +77,6 @@ public class Task {
                 '}';
     }
 
-
     @Override
     public int hashCode() {
         return Objects.hash(id);
@@ -90,5 +88,9 @@ public class Task {
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
         return id == task.id;
+    }
+
+    public TaskTypes getType() {
+        return TaskTypes.TASK;
     }
 }
