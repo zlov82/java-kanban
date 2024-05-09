@@ -230,7 +230,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    private void updateEpicDataAndDuration(int epicId) {
+    protected void updateEpicDataAndDuration(int epicId) {
         Epic savedEpic = epicsDb.get(epicId);
         if (savedEpic != null) {
             ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();

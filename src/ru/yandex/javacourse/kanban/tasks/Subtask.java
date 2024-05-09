@@ -42,6 +42,16 @@ public class Subtask extends Task {
         this.status = TaskStatus.valueOf(status.toUpperCase());
     }
 
+    public Subtask(int id, String title, String description, int epicId, String status, LocalDateTime startTime, Duration duration) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.epicId = epicId;
+        this.startTime = startTime;
+        this.duration = duration;
+        this.status = TaskStatus.valueOf(status.toUpperCase());
+    }
+
     public int getEpicId() {
         return epicId;
     }

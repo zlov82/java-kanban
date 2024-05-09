@@ -27,15 +27,8 @@ public class Task {
         this.status = TaskStatus.NEW;
     }
 
-    public Task(int id, String title, String description) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.status = TaskStatus.NEW;
-    }
-
-    public Task(int id, String title, String description, LocalDateTime startTime, Duration duration) {
-        this.id = id;
+    public Task(String title, String description, LocalDateTime startTime, Duration duration) {
+        this.id = 0;
         this.title = title;
         this.description = description;
         this.startTime = startTime;
@@ -43,10 +36,26 @@ public class Task {
         this.status = TaskStatus.NEW;
     }
 
+    public Task(int id, String title, String description) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = TaskStatus.NEW;
+    }
+
     public Task(int id, String title, String description, String status) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.status = TaskStatus.valueOf(status.toUpperCase());
+    }
+
+    public Task(int id, String title, String description, String status, LocalDateTime startTime, Duration duration) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.startTime = startTime;
+        this.duration = duration;
         this.status = TaskStatus.valueOf(status.toUpperCase());
     }
 

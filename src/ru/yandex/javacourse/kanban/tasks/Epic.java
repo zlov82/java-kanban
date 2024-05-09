@@ -8,7 +8,9 @@ public class Epic extends Task {
 
     private ArrayList<Integer> subtaskIdList = new ArrayList<>();
 
+    // Минимальная дата старта из подзадач эпика (рассчитывается отдельно в менеджере)
     private Duration duration;
+    // Общее время выполнения подзадач эпика (рассчитывается отдельно в менеджере)
     private LocalDateTime startTime;
 
     public Epic(String title) {
