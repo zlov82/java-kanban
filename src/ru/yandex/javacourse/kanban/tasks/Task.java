@@ -1,5 +1,7 @@
 package ru.yandex.javacourse.kanban.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -8,6 +10,10 @@ public class Task {
     protected String title;
     protected String description;
     protected TaskStatus status;
+
+    private Duration duration;
+    private LocalDateTime startTime;
+
 
     //Конструктор с полями по умолчанию
     public Task() {
@@ -25,6 +31,15 @@ public class Task {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.status = TaskStatus.NEW;
+    }
+
+    public Task(int id, String title, String description, LocalDateTime startTime, Duration duration) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.startTime = startTime;
+        this.duration = duration;
         this.status = TaskStatus.NEW;
     }
 
@@ -67,12 +82,34 @@ public class Task {
         this.status = status;
     }
 
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime.plus(duration);
+    }
+
     @Override
     public String toString() {
         return "Task{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
+                ", startTime='" + startTime + '\'' +
+                ", duration='" + duration + '\'' +
                 ", status=" + status +
                 '}';
     }

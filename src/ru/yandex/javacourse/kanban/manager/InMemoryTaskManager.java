@@ -5,10 +5,10 @@ import ru.yandex.javacourse.kanban.tasks.Subtask;
 import ru.yandex.javacourse.kanban.tasks.Task;
 import ru.yandex.javacourse.kanban.tasks.TaskStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
     protected int uniqueId = 0;
@@ -129,6 +129,7 @@ public class InMemoryTaskManager implements TaskManager {
             savedEpic.addNewSubtask(subtaskId);
             if (updateEpicStatus) {
                 updateEpicStatus(savedEpic.getId());
+                updateEpicDataAndDuration(savedEpic.getId());
             }
             return subtaskId;
         }
@@ -168,6 +169,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         subtaskDb.put(subtask.getId(), subtask);
         updateEpicStatus(subtask.getEpicId());
+        updateEpicDataAndDuration(subtask.getEpicId());
     }
 
     @Override
@@ -177,6 +179,7 @@ public class InMemoryTaskManager implements TaskManager {
             Epic savedEpic = epicsDb.get(deletedSubtask.getEpicId());
             savedEpic.deleteSubtask(subtaskId);
             updateEpicStatus(savedEpic.getId());
+            updateEpicDataAndDuration(savedEpic.getId());
         }
     }
 
@@ -199,6 +202,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (savedEpic != null) {
             ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();
 
+            /* Расчет статуса эпика */
             TaskStatus epicStatus;
             boolean isNew = false;
             boolean isInProcess = false;
@@ -214,7 +218,6 @@ public class InMemoryTaskManager implements TaskManager {
                     isDone = true;
                 }
             }
-
             // Вычисление статуса
             if (isDone && !isNew && !isInProcess) {
                 epicStatus = TaskStatus.DONE;
@@ -223,8 +226,42 @@ public class InMemoryTaskManager implements TaskManager {
             } else {
                 epicStatus = TaskStatus.NEW;
             }
-
             savedEpic.setStatus(epicStatus);
+        }
+    }
+
+    private void updateEpicDataAndDuration(int epicId) {
+        Epic savedEpic = epicsDb.get(epicId);
+        if (savedEpic != null) {
+            ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();
+
+            LocalDateTime epicStartTime;
+            if (savedEpic.getStartTime() != null) {
+                epicStartTime = savedEpic.getStartTime();
+            } else {
+                epicStartTime = LocalDateTime.MAX;
+            }
+
+            Duration epicDuration = Duration.ZERO;
+            for (int subtaskId : subtaskIds) {
+                Subtask subtask = subtaskDb.get(subtaskId);
+                Optional<LocalDateTime> startTime = Optional.ofNullable(subtask.getStartTime());
+                Optional<Duration> duration = Optional.ofNullable(subtask.getDuration());
+                if (startTime.isPresent()) {
+                    if (startTime.get().isBefore(epicStartTime)) {
+                        epicStartTime = startTime.get();
+                    }
+                }
+                if (duration.isPresent()) {
+                     epicDuration = epicDuration.plus(duration.get());
+                }
+            }
+            if (epicStartTime.isAfter(LocalDateTime.MIN)){
+                savedEpic.setStartTime(epicStartTime);
+            }
+            if (epicDuration.compareTo(Duration.ZERO) != 0) {
+                savedEpic.setDuration(epicDuration);
+            }
         }
     }
 

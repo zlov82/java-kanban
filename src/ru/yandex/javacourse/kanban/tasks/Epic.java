@@ -1,10 +1,15 @@
 package ru.yandex.javacourse.kanban.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
 
     private ArrayList<Integer> subtaskIdList = new ArrayList<>();
+
+    private Duration duration;
+    private LocalDateTime startTime;
 
     public Epic(String title) {
         this.title = title;
@@ -43,12 +48,30 @@ public class Epic extends Task {
         subtaskIdList.remove(index);
     }
 
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
     @Override
     public String toString() {
         return "Epic{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", status=" + status + '\'' +
+                ", startTime=" + startTime + '\'' +
+                ", duration=" + duration + '\'' +
                 ", subtaskIds=" + subtaskIdList +
                 '}';
     }
