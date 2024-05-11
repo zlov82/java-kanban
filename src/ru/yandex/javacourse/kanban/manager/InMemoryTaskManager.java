@@ -1,9 +1,9 @@
 package ru.yandex.javacourse.kanban.manager;
 
+import ru.yandex.javacourse.kanban.exceptions.TaskCrossTimeException;
 import ru.yandex.javacourse.kanban.tasks.*;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -12,6 +12,8 @@ public class InMemoryTaskManager implements TaskManager {
     protected final Map<Integer, Task> tasksDb;
     protected final Map<Integer, Epic> epicsDb;
     protected final Map<Integer, Subtask> subtaskDb;
+
+    //сортированные по времени начала задачи и подзадачи (без эпиков)
     protected final Set<Task> sortedTasks;
 
     private final HistoryManager historyManager = Managers.getDefaultHistory();
@@ -36,10 +38,17 @@ public class InMemoryTaskManager implements TaskManager {
         if (task.getId() == 0) {
             task.setId(getUniqueId());
         }
+
+        //Проверка на пересечение по времени
+        if (isCrossedTimeTask(task)) {
+            throw new TaskCrossTimeException("Задача " + task + "не добавлена. Пересечение времени");
+        };
+
         tasksDb.put(task.getId(), task);
         if (task.getStartTime() != null) {
             sortedTasks.add(task);
         }
+
         return task.getId();
     }
 
@@ -49,6 +58,10 @@ public class InMemoryTaskManager implements TaskManager {
         Task savedTask = tasksDb.get(id);
         if (savedTask != null) {
             tasksDb.put(id, newTask);
+
+            if (isCrossedTimeTask(newTask)) {
+                throw new TaskCrossTimeException("Задача " + newTask + "не добавлена. Пересечение времени");
+            };
 
             if (newTask.getStartTime() != null) {
                 sortedTasks.remove(savedTask);
@@ -117,6 +130,7 @@ public class InMemoryTaskManager implements TaskManager {
             epicsDb.remove(savedEpic.getId());
             sortedTasks.stream()
                     .filter(subtask -> subtask.getType() == TaskTypes.SUBTASK)
+                    .filter(subtask -> subtaskIdList.contains(subtask.getId()))
                     .forEach(sortedTasks :: remove);
         }
     }
@@ -147,6 +161,11 @@ public class InMemoryTaskManager implements TaskManager {
                 subtaskId = subtask.getId();
             }
             subtask.setId(subtaskId);
+
+            if (isCrossedTimeTask(subtask)) {
+                throw new TaskCrossTimeException("Невозможно добавить подзадачу " + subtask + " Есть пересечение по времени");
+            }
+
             subtaskDb.put(subtaskId, subtask);
             savedEpic.addNewSubtask(subtaskId);
             if (updateEpicStatus) {
@@ -194,6 +213,11 @@ public class InMemoryTaskManager implements TaskManager {
         if (savedSubtask == null) {
             return;
         }
+
+        if (isCrossedTimeTask(subtask)) {
+            throw new TaskCrossTimeException("Невозможно обновление задачи. Пересечение по времени\n" +subtask);
+        }
+
         subtaskDb.put(subtask.getId(), subtask);
         updateEpicStatus(subtask.getEpicId());
         updateEpicDataAndDuration(subtask.getEpicId());
@@ -305,6 +329,37 @@ public class InMemoryTaskManager implements TaskManager {
             if (epicDuration.compareTo(Duration.ZERO) != 0) {
                 savedEpic.setDuration(epicDuration);
             }
+        }
+    }
+
+    private boolean isCrossStartTimeTasks(Task newTask, Task oldTask) {
+        boolean isCrossed = false;
+
+        // Проверяемая задача содержит дату начала и время исполнения
+        if (newTask.getStartTime() != null && newTask.getDuration() != null) {
+
+            LocalDateTime startTime1 = newTask.getStartTime();
+            LocalDateTime endTime1 = startTime1.plus(newTask.getDuration());
+            LocalDateTime startTime2 = oldTask.getStartTime();
+
+            //дата_конца_временной_линии_2 > даты_начала_временной_линии_1
+            if (endTime1.isAfter(startTime2)){
+                isCrossed = true;
+            }
+        }
+        return isCrossed;
+    }
+
+    protected boolean isCrossedTimeTask(Task task) {
+        Optional<Task> crossTask = sortedTasks.stream()
+                .filter(sortedTasks -> sortedTasks.getId() != task.getId())
+                .filter(sortedTask -> isCrossStartTimeTasks(task, sortedTask))
+                .findFirst();
+
+        if (crossTask.isPresent()){
+            return true;
+        }else {
+            return false;
         }
     }
 

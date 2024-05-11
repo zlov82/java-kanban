@@ -1,6 +1,8 @@
 package ru.yandex.javacourse.kanban.manager;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.yandex.javacourse.kanban.exceptions.TaskCrossTimeException;
 import ru.yandex.javacourse.kanban.tasks.*;
 
 import java.io.File;
@@ -92,7 +94,7 @@ class FileBackedTaskManagerTest {
                     "SubtaskTitle",
                     "Description",
                     epicId,
-                    LocalDateTime.now(),
+                    LocalDateTime.now().minusDays(10),
                     Duration.ofDays(1)
                 ));
 
@@ -101,8 +103,8 @@ class FileBackedTaskManagerTest {
                     "SubtaskTitle_2",
                     "Description_2",
                     epicId,
-                    LocalDateTime.now().minusDays(1),
-                    Duration.ofDays(3)
+                    LocalDateTime.now().minusDays(20),
+                    Duration.ofDays(1)
             ));
 
             //Подзадача без времени
@@ -144,18 +146,18 @@ class FileBackedTaskManagerTest {
         //Таск без времени
         fileBackedTaskManager.addNewTask(new Task("TaskTitle","Description"));
 
-        //Такс со датой и временем
-        int taskId = fileBackedTaskManager.addNewTask(new Task(
+        //Такс со датой и временем (по времени будет самым последним в списке)
+        int taskIdLastInSort = fileBackedTaskManager.addNewTask(new Task(
                 "TaskTitle2",
                 "Description2",
-                LocalDateTime.now().minusDays(3),
-                Duration.ofDays(2)
+                LocalDateTime.now(),
+                Duration.ofDays(1)
         ));
 
-        //Обновляем таску
-        Task savedTask = fileBackedTaskManager.getTaskById(taskId);
+        //Обновляем таску (только статус)
+        Task savedTask = fileBackedTaskManager.getTaskById(taskIdLastInSort);
         fileBackedTaskManager.updateTask(new Task(
-                taskId,
+                taskIdLastInSort,
                 savedTask.getTitle(),
                 savedTask.getDescription(),
                 TaskStatus.IN_PROGRESS.toString(),
@@ -166,25 +168,25 @@ class FileBackedTaskManagerTest {
 
         int epicId = fileBackedTaskManager.addNewEpic(new Epic("EpicTitle"));
 
-        //Подзадача с текущим временем
-        fileBackedTaskManager.addNewSubtask(new Subtask(
+        //Подзадача с текущим временем (будет вторая в списке сортировки по времени)
+        int taskIdMediumInSort = fileBackedTaskManager.addNewSubtask(new Subtask(
                 "SubtaskTitle",
                 "Description",
                 epicId,
-                LocalDateTime.now(),
-                Duration.ofDays(1)
+                LocalDateTime.now().minusDays(3),
+                Duration.ofHours(1)
         ));
 
-        //Подзадача с вчерашним временем старта
-        fileBackedTaskManager.addNewSubtask(new Subtask(
+        //Подзадача, самая перая в списке
+        int taskIdFirstInSearch = fileBackedTaskManager.addNewSubtask(new Subtask(
                 "SubtaskTitle_2",
                 "Description_2",
                 epicId,
-                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now().minusDays(10),
                 Duration.ofDays(3)
         ));
 
-        //Подзадача без времени
+        //Подзадача без времени (не должна войти в список)
         fileBackedTaskManager.addNewSubtask(new Subtask(
                 "SubtaskTitle_2",
                 "Description_2",
@@ -197,11 +199,46 @@ class FileBackedTaskManagerTest {
         assertEquals(3, sortedTasks.size());
 
         //Проверка, что в sortedTasks обновленная таска, а не старая
-        assertTrue(sortedTasks.get(0).getStatus().equals(TaskStatus.IN_PROGRESS));
+        assertTrue(sortedTasks.get(2).getStatus().equals(TaskStatus.IN_PROGRESS));
 
         //Проверка оставшегося порядка
-        assertTrue((sortedTasks.get(1).getId() == 5 && sortedTasks.get(2).getId() == 4),
+        assertTrue((sortedTasks.get(0).getId() == taskIdFirstInSearch && sortedTasks.get(1).getId() == taskIdMediumInSort),
                 "В сортированном списке нарушена последовательность");
 
     }
+
+    @Test
+    void crossStartTimeTest() {
+
+        TaskManager manager = Managers.getDefault();
+
+        //Такс со датой и временем
+        int firstTaskId = manager.addNewTask(new Task(
+                "TaskTitle",
+                "Description",
+                LocalDateTime.of(2020, 10, 01, 12, 0),
+                Duration.ofMinutes(30)
+        ));
+
+        //Пересекающаяся задача
+        Assertions.assertThrows(TaskCrossTimeException.class, () -> {
+            manager.addNewTask(new Task(
+                    "TaskTitle2",
+                    "Description2",
+                    LocalDateTime.of(2020, 10, 01, 11, 45),
+                    Duration.ofMinutes(30)
+            ));
+        }, "Добавление задачи с пересекающимся временем исполнения должна приводить к исключению");
+
+        // Не пересекающая задача
+        Assertions.assertDoesNotThrow( () -> {
+            manager.addNewTask(new Task(
+                    "TaskTitle3",
+                    "Description3",
+                    LocalDateTime.of(2020,10,01,11,00),
+                    Duration.ofMinutes(45)
+            ));
+        }, "Добавление задачи не должно вызывать исключения");
+    }
+
 }
