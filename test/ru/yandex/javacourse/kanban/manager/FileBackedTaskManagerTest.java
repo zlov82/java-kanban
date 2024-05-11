@@ -1,15 +1,13 @@
 package ru.yandex.javacourse.kanban.manager;
 
 import org.junit.jupiter.api.Test;
-import ru.yandex.javacourse.kanban.tasks.Epic;
-import ru.yandex.javacourse.kanban.tasks.Subtask;
-import ru.yandex.javacourse.kanban.tasks.Task;
-import ru.yandex.javacourse.kanban.tasks.TaskStatus;
+import ru.yandex.javacourse.kanban.tasks.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -138,4 +136,72 @@ class FileBackedTaskManagerTest {
 
     }
 
+
+    @Test
+    void sortedTaskTest() {
+        TaskManager fileBackedTaskManager = Managers.getDefault();
+
+        //Таск без времени
+        fileBackedTaskManager.addNewTask(new Task("TaskTitle","Description"));
+
+        //Такс со датой и временем
+        int taskId = fileBackedTaskManager.addNewTask(new Task(
+                "TaskTitle2",
+                "Description2",
+                LocalDateTime.now().minusDays(3),
+                Duration.ofDays(2)
+        ));
+
+        //Обновляем таску
+        Task savedTask = fileBackedTaskManager.getTaskById(taskId);
+        fileBackedTaskManager.updateTask(new Task(
+                taskId,
+                savedTask.getTitle(),
+                savedTask.getDescription(),
+                TaskStatus.IN_PROGRESS.toString(),
+                savedTask.getStartTime(),
+                savedTask.getDuration()
+        ));
+
+
+        int epicId = fileBackedTaskManager.addNewEpic(new Epic("EpicTitle"));
+
+        //Подзадача с текущим временем
+        fileBackedTaskManager.addNewSubtask(new Subtask(
+                "SubtaskTitle",
+                "Description",
+                epicId,
+                LocalDateTime.now(),
+                Duration.ofDays(1)
+        ));
+
+        //Подзадача с вчерашним временем старта
+        fileBackedTaskManager.addNewSubtask(new Subtask(
+                "SubtaskTitle_2",
+                "Description_2",
+                epicId,
+                LocalDateTime.now().minusDays(1),
+                Duration.ofDays(3)
+        ));
+
+        //Подзадача без времени
+        fileBackedTaskManager.addNewSubtask(new Subtask(
+                "SubtaskTitle_2",
+                "Description_2",
+                epicId
+        ));
+
+        List<Task> sortedTasks = fileBackedTaskManager.getPrioritizedTasks();
+
+        //В sortedTasks должно быть 3 элемента
+        assertEquals(3, sortedTasks.size());
+
+        //Проверка, что в sortedTasks обновленная таска, а не старая
+        assertTrue(sortedTasks.get(0).getStatus().equals(TaskStatus.IN_PROGRESS));
+
+        //Проверка оставшегося порядка
+        assertTrue((sortedTasks.get(1).getId() == 5 && sortedTasks.get(2).getId() == 4),
+                "В сортированном списке нарушена последовательность");
+
+    }
 }

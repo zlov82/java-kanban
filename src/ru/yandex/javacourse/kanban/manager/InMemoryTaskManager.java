@@ -1,9 +1,6 @@
 package ru.yandex.javacourse.kanban.manager;
 
-import ru.yandex.javacourse.kanban.tasks.Epic;
-import ru.yandex.javacourse.kanban.tasks.Subtask;
-import ru.yandex.javacourse.kanban.tasks.Task;
-import ru.yandex.javacourse.kanban.tasks.TaskStatus;
+import ru.yandex.javacourse.kanban.tasks.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -15,13 +12,22 @@ public class InMemoryTaskManager implements TaskManager {
     protected final Map<Integer, Task> tasksDb;
     protected final Map<Integer, Epic> epicsDb;
     protected final Map<Integer, Subtask> subtaskDb;
+    protected final Set<Task> sortedTasks;
 
     private final HistoryManager historyManager = Managers.getDefaultHistory();
+
+    Comparator<Task> comparator = new Comparator<Task>() {
+        @Override
+        public int compare(Task o1, Task o2) {
+            return o1.getStartTime().compareTo(o2.getStartTime());
+        }
+    };
 
     public InMemoryTaskManager() {
         tasksDb = new HashMap<>();
         epicsDb = new HashMap<>();
         subtaskDb = new HashMap<>();
+        sortedTasks = new TreeSet<>(comparator);
     }
 
     /********* МЕТОДЫ ОБЫЧНЫХ ЗАДАЧ *********/
@@ -31,6 +37,9 @@ public class InMemoryTaskManager implements TaskManager {
             task.setId(getUniqueId());
         }
         tasksDb.put(task.getId(), task);
+        if (task.getStartTime() != null) {
+            sortedTasks.add(task);
+        }
         return task.getId();
     }
 
@@ -40,6 +49,11 @@ public class InMemoryTaskManager implements TaskManager {
         Task savedTask = tasksDb.get(id);
         if (savedTask != null) {
             tasksDb.put(id, newTask);
+
+            if (newTask.getStartTime() != null) {
+                sortedTasks.remove(savedTask);
+                sortedTasks.add(newTask);
+            }
         }
     }
 
@@ -57,12 +71,17 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteTaskById(int id) {
-        tasksDb.remove(id);
+        Task deletedTask = tasksDb.remove(id);
+        sortedTasks.remove(deletedTask);
+
     }
 
     @Override
     public void deleteAllTasks() {
         tasksDb.clear();
+        sortedTasks.stream()
+                .filter(task -> task.getType() == TaskTypes.TASK)
+                .forEach(sortedTasks::remove);
     }
 
     /********* ЭПИКИ *********/
@@ -96,6 +115,9 @@ public class InMemoryTaskManager implements TaskManager {
                 subtaskDb.remove(subtaskId);
             }
             epicsDb.remove(savedEpic.getId());
+            sortedTasks.stream()
+                    .filter(subtask -> subtask.getType() == TaskTypes.SUBTASK)
+                    .forEach(sortedTasks :: remove);
         }
     }
 
@@ -131,6 +153,11 @@ public class InMemoryTaskManager implements TaskManager {
                 updateEpicStatus(savedEpic.getId());
                 updateEpicDataAndDuration(savedEpic.getId());
             }
+
+            if (subtask.getStartTime() != null) {
+                sortedTasks.add(subtask);
+            }
+
             return subtaskId;
         }
         return null;
@@ -170,6 +197,11 @@ public class InMemoryTaskManager implements TaskManager {
         subtaskDb.put(subtask.getId(), subtask);
         updateEpicStatus(subtask.getEpicId());
         updateEpicDataAndDuration(subtask.getEpicId());
+
+        if (subtask.getStartTime() != null) {
+            sortedTasks.remove(savedSubtask);
+            sortedTasks.add(subtask);
+        }
     }
 
     @Override
@@ -180,6 +212,8 @@ public class InMemoryTaskManager implements TaskManager {
             savedEpic.deleteSubtask(subtaskId);
             updateEpicStatus(savedEpic.getId());
             updateEpicDataAndDuration(savedEpic.getId());
+
+            sortedTasks.remove(deletedSubtask);
         }
     }
 
@@ -191,6 +225,11 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return new ArrayList<>(historyManager.getHistory());
+    }
+
+    @Override
+    public List<Task> getPrioritizedTasks() {
+        return new ArrayList<>(sortedTasks);
     }
 
     private int getUniqueId() {
@@ -234,6 +273,10 @@ public class InMemoryTaskManager implements TaskManager {
         Epic savedEpic = epicsDb.get(epicId);
         if (savedEpic != null) {
             ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();
+
+            //todo Если у эпика нет подзадач - сбросить на нулл (то же в updateStastus)
+            //savedEpic.setDuration(null);
+            //savedEpic.setStartTime(null);
 
             LocalDateTime epicStartTime;
             if (savedEpic.getStartTime() != null) {
