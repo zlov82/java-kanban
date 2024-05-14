@@ -316,7 +316,7 @@ public class InMemoryTaskManager implements TaskManager {
                     if (duration.isPresent()) epicDuration = epicDuration.plus(duration.get());
                 }
 
-                if (epicStartTime.isAfter(LocalDateTime.MIN ) && epicStartTime.compareTo(LocalDateTime.MAX) != 0) {
+                if (epicStartTime.isAfter(LocalDateTime.MIN) && epicStartTime.compareTo(LocalDateTime.MAX) != 0) {
                     savedEpic.setStartTime(epicStartTime);
                 }
                 if (epicDuration.compareTo(Duration.ZERO) != 0) savedEpic.setDuration(epicDuration);
