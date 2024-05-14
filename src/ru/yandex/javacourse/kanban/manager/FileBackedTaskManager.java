@@ -11,7 +11,7 @@ import java.util.Optional;
 
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-    private final File pathToFileDb;
+    protected final File pathToFileDb;
 
     public static FileBackedTaskManager loadFromFile(File file) {
         final FileBackedTaskManager manager = new FileBackedTaskManager(file);
@@ -31,7 +31,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
             }
         } catch (IOException e) {
-            throw new ManagerSaveException(e);
+            throw new ManagerSaveException("Невозможно открыть файл для чтения");
         }
 
         return manager;
@@ -122,7 +122,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 writer.newLine();
             }
         } catch (IOException e) {
-            throw new ManagerSaveException(e);
+            throw new ManagerSaveException("Невозможно записать файл");
         }
     }
 

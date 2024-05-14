@@ -42,7 +42,8 @@ public class InMemoryTaskManager implements TaskManager {
         //Проверка на пересечение по времени
         if (isCrossedTimeTask(task)) {
             throw new TaskCrossTimeException("Задача " + task + "не добавлена. Пересечение времени");
-        };
+        }
+        ;
 
         tasksDb.put(task.getId(), task);
         if (task.getStartTime() != null) {
@@ -61,7 +62,8 @@ public class InMemoryTaskManager implements TaskManager {
 
             if (isCrossedTimeTask(newTask)) {
                 throw new TaskCrossTimeException("Задача " + newTask + "не добавлена. Пересечение времени");
-            };
+            }
+            ;
 
             if (newTask.getStartTime() != null) {
                 sortedTasks.remove(savedTask);
@@ -131,7 +133,7 @@ public class InMemoryTaskManager implements TaskManager {
             sortedTasks.stream()
                     .filter(subtask -> subtask.getType() == TaskTypes.SUBTASK)
                     .filter(subtask -> subtaskIdList.contains(subtask.getId()))
-                    .forEach(sortedTasks :: remove);
+                    .forEach(sortedTasks::remove);
         }
     }
 
@@ -206,16 +208,13 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubtask(Subtask subtask) {
         Epic savedEpic = epicsDb.get(subtask.getEpicId());
-        if (savedEpic == null) {
-            return;
-        }
+        if (savedEpic == null) return;
+
         Subtask savedSubtask = subtaskDb.get(subtask.getId());
-        if (savedSubtask == null) {
-            return;
-        }
+        if (savedSubtask == null) return;
 
         if (isCrossedTimeTask(subtask)) {
-            throw new TaskCrossTimeException("Невозможно обновление задачи. Пересечение по времени\n" +subtask);
+            throw new TaskCrossTimeException("Невозможно обновление задачи. Пересечение по времени\n" + subtask);
         }
 
         subtaskDb.put(subtask.getId(), subtask);
@@ -298,36 +297,32 @@ public class InMemoryTaskManager implements TaskManager {
         if (savedEpic != null) {
             ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();
 
-            //todo Если у эпика нет подзадач - сбросить на нулл (то же в updateStastus)
-            //savedEpic.setDuration(null);
-            //savedEpic.setStartTime(null);
+            if (!subtaskIds.isEmpty()) { // У эпика есть подзадачи
 
-            LocalDateTime epicStartTime;
-            if (savedEpic.getStartTime() != null) {
-                epicStartTime = savedEpic.getStartTime();
-            } else {
-                epicStartTime = LocalDateTime.MAX;
-            }
+                LocalDateTime epicStartTime;
+                if (savedEpic.getStartTime() != null) epicStartTime = savedEpic.getStartTime();
+                else {
+                    epicStartTime = LocalDateTime.MAX;
+                }
 
-            Duration epicDuration = Duration.ZERO;
-            for (int subtaskId : subtaskIds) {
-                Subtask subtask = subtaskDb.get(subtaskId);
-                Optional<LocalDateTime> startTime = Optional.ofNullable(subtask.getStartTime());
-                Optional<Duration> duration = Optional.ofNullable(subtask.getDuration());
-                if (startTime.isPresent()) {
-                    if (startTime.get().isBefore(epicStartTime)) {
-                        epicStartTime = startTime.get();
+                Duration epicDuration = Duration.ZERO;
+                for (int subtaskId : subtaskIds) {
+                    Subtask subtask = subtaskDb.get(subtaskId);
+                    Optional<LocalDateTime> startTime = Optional.ofNullable(subtask.getStartTime());
+                    Optional<Duration> duration = Optional.ofNullable(subtask.getDuration());
+                    if (startTime.isPresent()) {
+                        if (startTime.get().isBefore(epicStartTime)) epicStartTime = startTime.get();
                     }
+                    if (duration.isPresent()) epicDuration = epicDuration.plus(duration.get());
                 }
-                if (duration.isPresent()) {
-                     epicDuration = epicDuration.plus(duration.get());
+
+                if (epicStartTime.isAfter(LocalDateTime.MIN ) && epicStartTime.compareTo(LocalDateTime.MAX) != 0) {
+                    savedEpic.setStartTime(epicStartTime);
                 }
-            }
-            if (epicStartTime.isAfter(LocalDateTime.MIN)){
-                savedEpic.setStartTime(epicStartTime);
-            }
-            if (epicDuration.compareTo(Duration.ZERO) != 0) {
-                savedEpic.setDuration(epicDuration);
+                if (epicDuration.compareTo(Duration.ZERO) != 0) savedEpic.setDuration(epicDuration);
+            } else { // У эпика нет подзадач
+                savedEpic.setDuration(null);
+                savedEpic.setStartTime(null);
             }
         }
     }
@@ -343,22 +338,20 @@ public class InMemoryTaskManager implements TaskManager {
             LocalDateTime startTime2 = oldTask.getStartTime();
 
             //дата_конца_временной_линии_2 > даты_начала_временной_линии_1
-            if (endTime1.isAfter(startTime2)){
-                isCrossed = true;
-            }
+            if (endTime1.isAfter(startTime2)) isCrossed = true;
         }
         return isCrossed;
     }
 
     protected boolean isCrossedTimeTask(Task task) {
-        Optional<Task> crossTask = sortedTasks.stream()
+        Optional<Task> crossTask;
+        crossTask = sortedTasks.stream()
                 .filter(sortedTasks -> sortedTasks.getId() != task.getId())
                 .filter(sortedTask -> isCrossStartTimeTasks(task, sortedTask))
                 .findFirst();
 
-        if (crossTask.isPresent()){
-            return true;
-        }else {
+        if (crossTask.isPresent()) return true;
+        else {
             return false;
         }
     }

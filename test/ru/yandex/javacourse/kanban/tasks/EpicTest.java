@@ -6,7 +6,6 @@ import ru.yandex.javacourse.kanban.manager.TaskManager;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,26 +33,26 @@ class EpicTest {
                 "TITLE_TIME_SUBTASK_1",
                 "DESCRIPTION_1",
                 epicId,
-                LocalDateTime.of(2024,11,25,00,00),
+                LocalDateTime.of(2024, 11, 25, 00, 00),
                 Duration.ofDays(DURATION_DAY)
-                ));
+        ));
 
         taskManager.addNewSubtask(new Subtask(
                 "TITLE_TIME_SUBTASK_2",
                 "DESCRIPTION_2",
                 epicId,
-                LocalDateTime.of(2020,10,10,01,02),
+                LocalDateTime.of(2020, 10, 10, 01, 02),
                 Duration.ofMinutes(DURATION_MINUTES)
-                ));
+        ));
 
         final Epic savedEpic = taskManager.getEpicById(epicId);
 
         assertEquals(0, savedEpic.getDuration().compareTo(
-                Duration.ofDays(DURATION_DAY).plus(Duration.ofMinutes(DURATION_MINUTES))),
+                        Duration.ofDays(DURATION_DAY).plus(Duration.ofMinutes(DURATION_MINUTES))),
                 "Время duration в эпике не равняется сумме duration подзадач");
 
         assertEquals(0, savedEpic.getStartTime().compareTo(
-                LocalDateTime.of(2020,10,10,01,02)),
+                        LocalDateTime.of(2020, 10, 10, 01, 02)),
                 "Дата старта эпика не равна минимальной дате старта подзадачи");
     }
 
