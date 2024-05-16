@@ -11,9 +11,8 @@ public class Task {
     protected String description;
     protected TaskStatus status;
 
-    private Duration duration;
-    private LocalDateTime startTime;
-
+    protected Duration duration;
+    protected LocalDateTime startTime;
 
     //Конструктор с полями по умолчанию
     public Task() {
@@ -108,7 +107,11 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
-        return startTime.plus(duration);
+        if (startTime != null && duration != null) {
+            return startTime.plus(duration);
+        } else {
+            return null;
+        }
     }
 
     @Override

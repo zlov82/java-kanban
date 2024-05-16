@@ -54,6 +54,11 @@ class EpicTest {
         assertEquals(0, savedEpic.getStartTime().compareTo(
                         LocalDateTime.of(2020, 10, 10, 01, 02)),
                 "Дата старта эпика не равна минимальной дате старта подзадачи");
+
+        assertEquals(0, savedEpic.getEndTime().compareTo(
+                        LocalDateTime.of(2024, 11, 26, 00, 00)),
+                "Дата завершения эпика не равна дате закрытия самой последней по времени задаче");
+
     }
 
 }

@@ -14,22 +14,15 @@ public class InMemoryTaskManager implements TaskManager {
     protected final Map<Integer, Subtask> subtaskDb;
 
     //сортированные по времени начала задачи и подзадачи (без эпиков)
-    protected final Set<Task> sortedTasks;
+    protected final Set<Task> prioritizedTasks;
 
     private final HistoryManager historyManager = Managers.getDefaultHistory();
-
-    Comparator<Task> comparator = new Comparator<Task>() {
-        @Override
-        public int compare(Task o1, Task o2) {
-            return o1.getStartTime().compareTo(o2.getStartTime());
-        }
-    };
 
     public InMemoryTaskManager() {
         tasksDb = new HashMap<>();
         epicsDb = new HashMap<>();
         subtaskDb = new HashMap<>();
-        sortedTasks = new TreeSet<>(comparator);
+        prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
     }
 
     /********* МЕТОДЫ ОБЫЧНЫХ ЗАДАЧ *********/
@@ -43,11 +36,10 @@ public class InMemoryTaskManager implements TaskManager {
         if (isCrossedTimeTask(task)) {
             throw new TaskCrossTimeException("Задача " + task + "не добавлена. Пересечение времени");
         }
-        ;
 
         tasksDb.put(task.getId(), task);
         if (task.getStartTime() != null) {
-            sortedTasks.add(task);
+            prioritizedTasks.add(task);
         }
 
         return task.getId();
@@ -63,11 +55,10 @@ public class InMemoryTaskManager implements TaskManager {
             if (isCrossedTimeTask(newTask)) {
                 throw new TaskCrossTimeException("Задача " + newTask + "не добавлена. Пересечение времени");
             }
-            ;
 
             if (newTask.getStartTime() != null) {
-                sortedTasks.remove(savedTask);
-                sortedTasks.add(newTask);
+                prioritizedTasks.remove(savedTask);
+                prioritizedTasks.add(newTask);
             }
         }
     }
@@ -87,16 +78,16 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteTaskById(int id) {
         Task deletedTask = tasksDb.remove(id);
-        sortedTasks.remove(deletedTask);
+        prioritizedTasks.remove(deletedTask);
 
     }
 
     @Override
     public void deleteAllTasks() {
         tasksDb.clear();
-        sortedTasks.stream()
+        prioritizedTasks.stream()
                 .filter(task -> task.getType() == TaskTypes.TASK)
-                .forEach(sortedTasks::remove);
+                .forEach(prioritizedTasks::remove);
     }
 
     /********* ЭПИКИ *********/
@@ -116,7 +107,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (savedEpic != null) {
             savedEpic.setTitle(epic.getTitle());
             savedEpic.setDescription(epic.getDescription());
-            // статус тут не изменяется (только при обновлении сабтасков)
+            // статус тут не изменяется (только при обновлении подзадач)
             epicsDb.put(savedEpicId, savedEpic);
         }
     }
@@ -130,10 +121,10 @@ public class InMemoryTaskManager implements TaskManager {
                 subtaskDb.remove(subtaskId);
             }
             epicsDb.remove(savedEpic.getId());
-            sortedTasks.stream()
+            prioritizedTasks.stream()
                     .filter(subtask -> subtask.getType() == TaskTypes.SUBTASK)
                     .filter(subtask -> subtaskIdList.contains(subtask.getId()))
-                    .forEach(sortedTasks::remove);
+                    .forEach(prioritizedTasks::remove);
         }
     }
 
@@ -171,12 +162,11 @@ public class InMemoryTaskManager implements TaskManager {
             subtaskDb.put(subtaskId, subtask);
             savedEpic.addNewSubtask(subtaskId);
             if (updateEpicStatus) {
-                updateEpicStatus(savedEpic.getId());
-                updateEpicDataAndDuration(savedEpic.getId());
+                updateEpicsAttributes(savedEpic.getId());
             }
 
             if (subtask.getStartTime() != null) {
-                sortedTasks.add(subtask);
+                prioritizedTasks.add(subtask);
             }
 
             return subtaskId;
@@ -218,12 +208,12 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         subtaskDb.put(subtask.getId(), subtask);
-        updateEpicStatus(subtask.getEpicId());
-        updateEpicDataAndDuration(subtask.getEpicId());
+
+        updateEpicsAttributes(subtask.getEpicId());
 
         if (subtask.getStartTime() != null) {
-            sortedTasks.remove(savedSubtask);
-            sortedTasks.add(subtask);
+            prioritizedTasks.remove(savedSubtask);
+            prioritizedTasks.add(subtask);
         }
     }
 
@@ -233,10 +223,8 @@ public class InMemoryTaskManager implements TaskManager {
         if (deletedSubtask != null) {
             Epic savedEpic = epicsDb.get(deletedSubtask.getEpicId());
             savedEpic.deleteSubtask(subtaskId);
-            updateEpicStatus(savedEpic.getId());
-            updateEpicDataAndDuration(savedEpic.getId());
-
-            sortedTasks.remove(deletedSubtask);
+            updateEpicsAttributes(savedEpic.getId());
+            prioritizedTasks.remove(deletedSubtask);
         }
     }
 
@@ -252,78 +240,88 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Task> getPrioritizedTasks() {
-        return new ArrayList<>(sortedTasks);
+        return new ArrayList<>(prioritizedTasks);
     }
 
     private int getUniqueId() {
         return ++uniqueId;
     }
 
-    private void updateEpicStatus(int epicId) {
-        Epic savedEpic = epicsDb.get(epicId);
-        if (savedEpic != null) {
-            ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();
+    private void updateEpicStatus(Epic savedEpic) {
+        ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();
 
-            /* Расчет статуса эпика */
-            TaskStatus epicStatus;
-            boolean isNew = false;
-            boolean isInProcess = false;
-            boolean isDone = false;
+        /* Расчет статуса эпика */
+        TaskStatus epicStatus;
+        boolean isNew = false;
+        boolean isInProcess = false;
+        boolean isDone = false;
 
-            for (int subtaskId : subtaskIds) {
-                Subtask subtask = subtaskDb.get(subtaskId);
-                if (subtask.getStatus() == TaskStatus.NEW) {
-                    isNew = true;
-                } else if (subtask.getStatus() == TaskStatus.IN_PROGRESS) {
-                    isInProcess = true;
-                } else {
-                    isDone = true;
-                }
-            }
-            // Вычисление статуса
-            if (isDone && !isNew && !isInProcess) {
-                epicStatus = TaskStatus.DONE;
-            } else if (isInProcess || isDone) {
-                epicStatus = TaskStatus.IN_PROGRESS;
+        for (int subtaskId : subtaskIds) {
+            Subtask subtask = subtaskDb.get(subtaskId);
+            if (subtask.getStatus() == TaskStatus.NEW) {
+                isNew = true;
+            } else if (subtask.getStatus() == TaskStatus.IN_PROGRESS) {
+                isInProcess = true;
             } else {
-                epicStatus = TaskStatus.NEW;
+                isDone = true;
             }
-            savedEpic.setStatus(epicStatus);
         }
+        // Вычисление статуса
+        if (isDone && !isNew && !isInProcess) {
+            epicStatus = TaskStatus.DONE;
+        } else if (isInProcess || isDone) {
+            epicStatus = TaskStatus.IN_PROGRESS;
+        } else {
+            epicStatus = TaskStatus.NEW;
+        }
+        savedEpic.setStatus(epicStatus);
     }
 
-    protected void updateEpicDataAndDuration(int epicId) {
-        Epic savedEpic = epicsDb.get(epicId);
-        if (savedEpic != null) {
-            ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();
+    protected void updateEpicDataAndDuration(Epic savedEpic) {
+        ArrayList<Integer> subtaskIds = savedEpic.getSubtaskIdList();
 
-            if (!subtaskIds.isEmpty()) { // У эпика есть подзадачи
+        if (!subtaskIds.isEmpty()) { // У эпика есть подзадачи
 
-                LocalDateTime epicStartTime;
-                if (savedEpic.getStartTime() != null) epicStartTime = savedEpic.getStartTime();
-                else {
-                    epicStartTime = LocalDateTime.MAX;
-                }
-
-                Duration epicDuration = Duration.ZERO;
-                for (int subtaskId : subtaskIds) {
-                    Subtask subtask = subtaskDb.get(subtaskId);
-                    Optional<LocalDateTime> startTime = Optional.ofNullable(subtask.getStartTime());
-                    Optional<Duration> duration = Optional.ofNullable(subtask.getDuration());
-                    if (startTime.isPresent()) {
-                        if (startTime.get().isBefore(epicStartTime)) epicStartTime = startTime.get();
-                    }
-                    if (duration.isPresent()) epicDuration = epicDuration.plus(duration.get());
-                }
-
-                if (epicStartTime.isAfter(LocalDateTime.MIN) && epicStartTime.compareTo(LocalDateTime.MAX) != 0) {
-                    savedEpic.setStartTime(epicStartTime);
-                }
-                if (epicDuration.compareTo(Duration.ZERO) != 0) savedEpic.setDuration(epicDuration);
-            } else { // У эпика нет подзадач
-                savedEpic.setDuration(null);
-                savedEpic.setStartTime(null);
+            LocalDateTime epicStartTime;
+            if (savedEpic.getStartTime() != null) {
+                epicStartTime = savedEpic.getStartTime();
+            } else {
+                epicStartTime = LocalDateTime.MAX;
             }
+            LocalDateTime epicEndTime = LocalDateTime.MIN;
+
+            Duration epicDuration = Duration.ZERO;
+            for (int subtaskId : subtaskIds) {
+                Subtask subtask = subtaskDb.get(subtaskId);
+                Optional<LocalDateTime> startTime = Optional.ofNullable(subtask.getStartTime());
+                Optional<LocalDateTime> endTime = Optional.ofNullable(subtask.getEndTime());
+                Optional<Duration> duration = Optional.ofNullable(subtask.getDuration());
+
+                if (startTime.isPresent()) {
+                    if (startTime.get().isBefore(epicStartTime)) {
+                        epicStartTime = startTime.get();
+                    }
+                }
+                if (endTime.isPresent()) {
+                    if (endTime.get().isAfter(epicEndTime)) {
+                        epicEndTime = endTime.get();
+                    }
+                }
+                if (duration.isPresent()) {
+                    epicDuration = epicDuration.plus(duration.get());
+                }
+            }
+
+            if (epicStartTime.isAfter(LocalDateTime.MIN) && epicStartTime.compareTo(LocalDateTime.MAX) != 0) {
+                savedEpic.setStartTime(epicStartTime);
+            }
+            if (epicEndTime.isAfter(LocalDateTime.MIN)) {
+                savedEpic.setEndTime(epicEndTime);
+            }
+            if (epicDuration.compareTo(Duration.ZERO) != 0) savedEpic.setDuration(epicDuration);
+        } else { // У эпика нет подзадач
+            savedEpic.setDuration(null);
+            savedEpic.setStartTime(null);
         }
     }
 
@@ -345,14 +343,23 @@ public class InMemoryTaskManager implements TaskManager {
 
     protected boolean isCrossedTimeTask(Task task) {
         Optional<Task> crossTask;
-        crossTask = sortedTasks.stream()
-                .filter(sortedTasks -> sortedTasks.getId() != task.getId())
+        crossTask = prioritizedTasks.stream()
+                .filter(sortedTask -> sortedTask.getId() != task.getId())
                 .filter(sortedTask -> isCrossStartTimeTasks(task, sortedTask))
                 .findFirst();
 
-        if (crossTask.isPresent()) return true;
-        else {
+        if (crossTask.isPresent()) {
+            return true;
+        } else {
             return false;
+        }
+    }
+
+    private void updateEpicsAttributes(int epicId) {
+        Epic savedEpic = epicsDb.get(epicId);
+        if (savedEpic != null) {
+            updateEpicDataAndDuration(savedEpic);
+            updateEpicStatus(savedEpic);
         }
     }
 

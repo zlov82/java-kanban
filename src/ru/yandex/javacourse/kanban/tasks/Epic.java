@@ -7,11 +7,7 @@ import java.util.ArrayList;
 public class Epic extends Task {
 
     private ArrayList<Integer> subtaskIdList = new ArrayList<>();
-
-    // Общее время выполнения подзадач эпика (рассчитывается отдельно в менеджере)
-    private Duration duration;
-    // Минимальная дата старта из подзадач эпика (рассчитывается отдельно в менеджере)
-    private LocalDateTime startTime;
+    private LocalDateTime endTime;  //время окончания самой поздней из задач
 
     public Epic(String title) {
         this.title = title;
@@ -50,22 +46,6 @@ public class Epic extends Task {
         subtaskIdList.remove(index);
     }
 
-    public Duration getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Duration duration) {
-        this.duration = duration;
-    }
-
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
     @Override
     public String toString() {
         return "Epic{" +
@@ -74,6 +54,7 @@ public class Epic extends Task {
                 ", status=" + status + '\'' +
                 ", startTime=" + startTime + '\'' +
                 ", duration=" + duration + '\'' +
+                ", endTime=" + endTime + '\'' +
                 ", subtaskIds=" + subtaskIdList +
                 '}';
     }
@@ -82,4 +63,12 @@ public class Epic extends Task {
         return TaskTypes.EPIC;
     }
 
+    @Override
+    public LocalDateTime getEndTime() {
+        return this.endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
 }

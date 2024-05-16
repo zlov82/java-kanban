@@ -130,18 +130,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         Task task = new Task();
         String[] lines = fileLine.split(",");
 
-            /*
-            0 - id
-            1 - тип задачи
-            2 - title
-            3 - status
-            4 - description
-            5 (если тип subtask) - epicId
-            6 (если есть) - localdate
-            7 (если есть) - duration
-             */
-        final Integer taskId = Integer.parseInt(lines[0]);
-
+        final int taskId = Integer.parseInt(lines[0]);
 
         switch (TaskTypes.valueOf(lines[1].toUpperCase())) {
             case TaskTypes.TASK:
@@ -204,7 +193,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 //Добавление подзадачи во внутренний список эпика
                 Epic epic = epicsDb.get(epicId);
                 epic.addNewSubtask(id);
-                updateEpicDataAndDuration(epicId); //обновление временных меток эпика
+                updateEpicDataAndDuration(epic); //обновление временных меток эпика
+
                 break;
         }
     }

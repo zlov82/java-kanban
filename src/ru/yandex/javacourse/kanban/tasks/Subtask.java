@@ -6,9 +6,7 @@ import java.time.LocalDateTime;
 public class Subtask extends Task {
 
     private int epicId;
-
-    private Duration duration;
-    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 
     public Subtask(String title, String description, int epicId) {
         this.title = title;
@@ -60,26 +58,6 @@ public class Subtask extends Task {
         this.epicId = epicId;
     }
 
-    public Duration getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Duration duration) {
-        this.duration = duration;
-    }
-
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public LocalDateTime getEndTime() {
-        return startTime.plus(duration);
-    }
-
     @Override
     public String toString() {
         return "Subtask{" +
@@ -96,4 +74,5 @@ public class Subtask extends Task {
     public TaskTypes getType() {
         return TaskTypes.SUBTASK;
     }
+
 }
