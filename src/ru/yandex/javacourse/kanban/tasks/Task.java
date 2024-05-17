@@ -1,5 +1,7 @@
 package ru.yandex.javacourse.kanban.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -8,6 +10,9 @@ public class Task {
     protected String title;
     protected String description;
     protected TaskStatus status;
+
+    protected Duration duration;
+    protected LocalDateTime startTime;
 
     //Конструктор с полями по умолчанию
     public Task() {
@@ -18,6 +23,15 @@ public class Task {
         this.id = 0;
         this.title = title;
         this.description = description;
+        this.status = TaskStatus.NEW;
+    }
+
+    public Task(String title, String description, LocalDateTime startTime, Duration duration) {
+        this.id = 0;
+        this.title = title;
+        this.description = description;
+        this.startTime = startTime;
+        this.duration = duration;
         this.status = TaskStatus.NEW;
     }
 
@@ -32,6 +46,15 @@ public class Task {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.status = TaskStatus.valueOf(status.toUpperCase());
+    }
+
+    public Task(int id, String title, String description, String status, LocalDateTime startTime, Duration duration) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.startTime = startTime;
+        this.duration = duration;
         this.status = TaskStatus.valueOf(status.toUpperCase());
     }
 
@@ -67,12 +90,38 @@ public class Task {
         this.status = status;
     }
 
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        if (startTime != null && duration != null) {
+            return startTime.plus(duration);
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public String toString() {
         return "Task{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
+                ", startTime='" + startTime + '\'' +
+                ", duration='" + duration + '\'' +
                 ", status=" + status +
                 '}';
     }

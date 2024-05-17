@@ -49,6 +49,4 @@ class TaskTest {
         assertEquals(newDescription, updatedSavedTask.getDescription(), "Не верное описание у новой");
     }
 
-
-
 }

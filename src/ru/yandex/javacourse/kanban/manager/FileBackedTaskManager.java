@@ -5,10 +5,13 @@ import ru.yandex.javacourse.kanban.tasks.*;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-    private final File pathToFileDb;
+    protected final File pathToFileDb;
 
     public static FileBackedTaskManager loadFromFile(File file) {
         final FileBackedTaskManager manager = new FileBackedTaskManager(file);
@@ -28,7 +31,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
             }
         } catch (IOException e) {
-            throw new ManagerSaveException(e);
+            throw new ManagerSaveException("Невозможно открыть файл для чтения");
         }
 
         return manager;
@@ -119,7 +122,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 writer.newLine();
             }
         } catch (IOException e) {
-            throw new ManagerSaveException(e);
+            throw new ManagerSaveException("Невозможно записать файл");
         }
     }
 
@@ -127,25 +130,47 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         Task task = new Task();
         String[] lines = fileLine.split(",");
 
-            /*
-            0 - id
-            1 - тип задачи
-            2 - title
-            3 - status
-            4 - description
-            5 (если тип subtask) - epicId
-             */
-        final Integer taskId = Integer.parseInt(lines[0]);
+        final int taskId = Integer.parseInt(lines[0]);
 
         switch (TaskTypes.valueOf(lines[1].toUpperCase())) {
             case TaskTypes.TASK:
-                task = new Task(taskId, lines[2], lines[4], TaskStatus.valueOf(lines[3]).toString());
+                if (lines.length > 5) { //заполнены все поля
+                    LocalDateTime startTime = LocalDateTime.parse(lines[6]);
+                    Duration duration = Duration.ofMinutes(Integer.parseInt(lines[7]));
+                    task = new Task(
+                            taskId,
+                            lines[2],
+                            lines[4],
+                            TaskStatus.valueOf(lines[3]).toString(),
+                            startTime,
+                            duration);
+                } else {   // нет временных меток
+                    task = new Task(
+                            taskId,
+                            lines[2],
+                            lines[4],
+                            TaskStatus.valueOf(lines[3]).toString());
+                }
                 return task;
             case TaskTypes.EPIC:
                 task = new Epic(taskId, lines[2], TaskStatus.valueOf(lines[3]));
                 return task;
             case TaskTypes.SUBTASK:
-                task = new Subtask(taskId, lines[2], lines[4], Integer.parseInt(lines[5]), TaskStatus.valueOf(lines[3]).toString());
+                if (lines.length > 6) { // все поля
+                    LocalDateTime startTime = LocalDateTime.parse(lines[6]);
+                    Duration duration = Duration.ofMinutes(Integer.parseInt(lines[7]));
+                    task = new Subtask(
+                            taskId,
+                            lines[2],
+                            lines[4],
+                            Integer.parseInt(lines[5]),
+                            TaskStatus.valueOf(lines[3]).toString(),
+                            startTime,
+                            duration);
+                } else {
+                    task = new Subtask(taskId, lines[2], lines[4], Integer.parseInt(lines[5]),
+                            TaskStatus.valueOf(lines[3]).toString());
+                }
                 return task;
         }
         return task;
@@ -168,11 +193,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 //Добавление подзадачи во внутренний список эпика
                 Epic epic = epicsDb.get(epicId);
                 epic.addNewSubtask(id);
+                updateEpicDataAndDuration(epic); //обновление временных меток эпика
+
                 break;
         }
     }
 
     public static String toString(Task task) {
+        // id, тип, заголовок, описание, подтип задачи (если эпик), дата старта, время выполнения
         StringBuilder sb = new StringBuilder();
         sb.append(task.getId())
                 .append(",")
@@ -194,6 +222,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             Integer epicId = subtask.getEpicId();
             sb.append(epicId);
         }
+        sb.append(",");
+
+        //дата старта
+        Optional<LocalDateTime> startTime = Optional.ofNullable(task.getStartTime());
+        if (startTime.isPresent()) {
+            sb.append(startTime.get());
+        }
+        sb.append(",");
+
+        //время выполнения
+        Optional<Duration> duration = Optional.ofNullable(task.getDuration());
+        if (duration.isPresent()) {
+            sb.append(duration.get().toMinutes());
+        }
+
         return sb.toString();
     }
 }

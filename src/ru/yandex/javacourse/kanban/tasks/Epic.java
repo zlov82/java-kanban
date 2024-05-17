@@ -1,10 +1,12 @@
 package ru.yandex.javacourse.kanban.tasks;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
 
     private ArrayList<Integer> subtaskIdList = new ArrayList<>();
+    private LocalDateTime endTime;  //время окончания самой поздней из задач
 
     public Epic(String title) {
         this.title = title;
@@ -49,6 +51,9 @@ public class Epic extends Task {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", status=" + status + '\'' +
+                ", startTime=" + startTime + '\'' +
+                ", duration=" + duration + '\'' +
+                ", endTime=" + endTime + '\'' +
                 ", subtaskIds=" + subtaskIdList +
                 '}';
     }
@@ -57,4 +62,12 @@ public class Epic extends Task {
         return TaskTypes.EPIC;
     }
 
+    @Override
+    public LocalDateTime getEndTime() {
+        return this.endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
 }

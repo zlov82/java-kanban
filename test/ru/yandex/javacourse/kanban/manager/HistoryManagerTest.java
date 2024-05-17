@@ -9,7 +9,6 @@ import ru.yandex.javacourse.kanban.tasks.TaskStatus;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -127,7 +126,6 @@ class HistoryManagerTest {
 
         assertTrue(historyList.size() == taskNumbers.size(), "Провалена проверка на уникальность" +
                 " идентификаторов в истории");
-
     }
 
 
