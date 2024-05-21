@@ -186,6 +186,23 @@ abstract class TaskManagerTest<T extends TaskManager> {
         }, "Добавление задачи не должно вызывать исключения");
     }
 
+    @Test
+    void crossStartTimeTest2() {
+        int task8_9 = taskManager.addNewTask(new Task(
+                "TaskTitle2",
+                "Description2",
+                LocalDateTime.of(2024,05,21,8,0),
+                Duration.ofMinutes(60)
+        ));
+
+        int task9_10 = taskManager.addNewTask(new Task(
+                "TaskTitle2",
+                "Description2",
+                LocalDateTime.of(2024,05,21,9,0),
+                Duration.ofMinutes(60)
+        ));
+    }
+
     void addManyTasks() {
         final int task1 = taskManager.addNewTask(new Task("Помыть посуду", "На этой неделе"));
         final int task2 = taskManager.addNewTask(new Task("Купить билеты на камчатку", "С 18 по 28 июня"));

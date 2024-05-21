@@ -330,13 +330,21 @@ public class InMemoryTaskManager implements TaskManager {
 
         // Проверяемая задача содержит дату начала и время исполнения
         if (newTask.getStartTime() != null && newTask.getDuration() != null) {
+            /*
+            https://protocoder.ru/alg/datescrossing
+                Отрезки не пересекаются startA---endA  startB---endB  startA---endA
+                формула не пересечения: startA > endB OR endA < startB
+                формула пересечения: NOT(startA > endB OR endA < startB)
+                раскрываем: startA < endB AND endA > startB
+             */
+            LocalDateTime startA = newTask.getStartTime();
+            LocalDateTime endA = startA.plus(newTask.getDuration());
+            LocalDateTime startB = oldTask.getStartTime();
+            LocalDateTime endB = startB.plus(oldTask.getDuration());
 
-            LocalDateTime startTime1 = newTask.getStartTime();
-            LocalDateTime endTime1 = startTime1.plus(newTask.getDuration());
-            LocalDateTime startTime2 = oldTask.getStartTime();
-
-            //дата_конца_временной_линии_2 > даты_начала_временной_линии_1
-            if (endTime1.isAfter(startTime2)) isCrossed = true;
+            if (startA.isBefore(endB) && endA.isAfter(startB)) {
+                isCrossed = true;
+            }
         }
         return isCrossed;
     }
