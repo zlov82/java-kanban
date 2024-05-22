@@ -31,7 +31,6 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        printLog(exchange);
         String method = exchange.getRequestMethod();
 
         switch (method) {
@@ -69,14 +68,12 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
 
     private void handlePostMethod(HttpExchange exchange) throws IOException {
 
-        System.out.println("123");
-        Optional<Integer> optionalQueryId = getQueryTaskId(exchange);
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        String body = getHttpBody(exchange);
         JsonTaskModel jsonTaskModel = gson.fromJson(body, JsonTaskModel.class);
+        Optional<Integer> optionalPostId = Optional.ofNullable(jsonTaskModel.getId());
 
-        // Путь POST /tasks/ - добавление новой задачи
-        if (optionalQueryId.isEmpty()) { //создание нового поста
+        // добавление новой задачи
+        if (optionalPostId.isEmpty()) { //создание нового поста
             // Создание таска без даты и времени
             if (jsonTaskModel.getStartTime() == null || jsonTaskModel.getStatus() == null) {
                 manager.addNewTask(new Task(jsonTaskModel.getTitle()
@@ -98,8 +95,8 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
         }
 
         //Путь POST /tasks/{id} - обновление задачи
-        if (optionalQueryId.isPresent()) {
-            Integer taskId = optionalQueryId.get();
+        if (optionalPostId.isPresent()) {
+            Integer taskId = optionalPostId.get();
             // Создание таска без даты и времени
             if (jsonTaskModel.getStartTime() == null || jsonTaskModel.getStatus() == null) {
                 manager.updateTask(new Task(taskId

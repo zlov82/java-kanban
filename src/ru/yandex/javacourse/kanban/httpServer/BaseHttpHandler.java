@@ -3,6 +3,7 @@ package ru.yandex.javacourse.kanban.httpServer;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -43,9 +44,10 @@ public class BaseHttpHandler {
         }
     }
 
-    protected void printLog(HttpExchange exchange) {
-        System.out.println("Incoming request "
-                + exchange.getRequestMethod() + " "
-                +exchange.getRequestURI());
+    protected String getHttpBody(HttpExchange exchange) throws IOException {
+        InputStream inputStream = exchange.getRequestBody();
+        return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     }
+
+
 }

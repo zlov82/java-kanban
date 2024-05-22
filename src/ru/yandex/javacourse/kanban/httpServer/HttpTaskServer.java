@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;
 import ru.yandex.javacourse.kanban.manager.Managers;
 import ru.yandex.javacourse.kanban.manager.TaskManager;
+import ru.yandex.javacourse.kanban.tasks.Epic;
+import ru.yandex.javacourse.kanban.tasks.Subtask;
 import ru.yandex.javacourse.kanban.tasks.Task;
 
 import java.io.IOException;
@@ -35,7 +37,7 @@ public class HttpTaskServer {
 
     public void startServer() {
         httpServer.createContext("/tasks", new TaskHandler(manager,gson));
-        httpServer.createContext("/epics", new EpicHandler(manager));
+        httpServer.createContext("/epics", new EpicHandler(manager,gson));
         httpServer.createContext("/subtasks", new SubtaskHandler(manager));
         httpServer.start();
         System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
@@ -56,6 +58,15 @@ public class HttpTaskServer {
     }
 
     private void testTasks() {
+
+        int epicId1 = manager.addNewEpic(new Epic("Первый эпик"));
+        int epicId2 = manager.addNewEpic(new Epic("Второй эпик"));
+
+        manager.addNewSubtask(new Subtask("Под первым эпиком1", "Описание 1", epicId1));
+        manager.addNewSubtask(new Subtask("Под первым эпиком2", "Описание 2", epicId1));
+
+        manager.addNewSubtask(new Subtask("Под вторым эпиком", "Описание 2", epicId2));
+
         manager.addNewTask(new Task("Задача 1","Описание 1"));
         manager.addNewTask(new Task("Задача 2","Описание 2"));
 /*

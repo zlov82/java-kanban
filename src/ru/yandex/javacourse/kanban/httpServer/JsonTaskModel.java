@@ -10,6 +10,7 @@ public class JsonTaskModel {
     private String status;
     private LocalDateTime startTime;
     private Duration duration;
+    private Integer epicId;
 
     public Integer getId() {
         return id;
@@ -33,5 +34,9 @@ public class JsonTaskModel {
 
     public Duration getDuration() {
         return duration;
+    }
+
+    public Integer getEpicId() {
+        return epicId;
     }
 }
