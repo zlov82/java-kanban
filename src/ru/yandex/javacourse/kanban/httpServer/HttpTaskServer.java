@@ -3,6 +3,10 @@ package ru.yandex.javacourse.kanban.httpServer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;
+import ru.yandex.javacourse.kanban.httpServer.adapters.DurationAdapter;
+import ru.yandex.javacourse.kanban.httpServer.adapters.LocalDateTimeAdapter;
+import ru.yandex.javacourse.kanban.httpServer.handlers.*;
+import ru.yandex.javacourse.kanban.manager.HistoryManager;
 import ru.yandex.javacourse.kanban.manager.Managers;
 import ru.yandex.javacourse.kanban.manager.TaskManager;
 import ru.yandex.javacourse.kanban.tasks.Epic;
@@ -39,6 +43,8 @@ public class HttpTaskServer {
         httpServer.createContext("/tasks", new TaskHandler(manager,gson));
         httpServer.createContext("/epics", new EpicHandler(manager,gson));
         httpServer.createContext("/subtasks", new SubtaskHandler(manager));
+        httpServer.createContext("/history", new HistoryHandler(manager, gson));
+        httpServer.createContext("/prioritized", new PrioretizedHandler(manager, gson));
         httpServer.start();
         System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
     }
@@ -62,13 +68,18 @@ public class HttpTaskServer {
         int epicId1 = manager.addNewEpic(new Epic("Первый эпик"));
         int epicId2 = manager.addNewEpic(new Epic("Второй эпик"));
 
-        manager.addNewSubtask(new Subtask("Под первым эпиком1", "Описание 1", epicId1));
+        manager.addNewSubtask(new Subtask("Под первым эпиком1", "Описание 1", epicId1
+                ,LocalDateTime.of(2023,12,31,23,59)
+                ,Duration.ofMinutes(10)));
+
         manager.addNewSubtask(new Subtask("Под первым эпиком2", "Описание 2", epicId1));
 
         manager.addNewSubtask(new Subtask("Под вторым эпиком", "Описание 2", epicId2));
 
         manager.addNewTask(new Task("Задача 1","Описание 1"));
-        manager.addNewTask(new Task("Задача 2","Описание 2"));
+        manager.addNewTask(new Task("Задача 2","Описание 2"
+                ,LocalDateTime.of(2024,01,10,10,00)
+                ,Duration.ofMinutes(20)));
 /*
         manager.addNewTask(new Task("Со временем", "Описание"
         ,LocalDateTime.of(2024,05,22,17,00)

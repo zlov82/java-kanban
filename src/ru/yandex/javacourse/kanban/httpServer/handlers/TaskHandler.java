@@ -1,16 +1,15 @@
-package ru.yandex.javacourse.kanban.httpServer;
+package ru.yandex.javacourse.kanban.httpServer.handlers;
 
 import ru.yandex.javacourse.kanban.exceptions.*;
 
 import com.google.gson.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import ru.yandex.javacourse.kanban.httpServer.JsonTaskModel;
 import ru.yandex.javacourse.kanban.manager.TaskManager;
 import ru.yandex.javacourse.kanban.tasks.Task;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 

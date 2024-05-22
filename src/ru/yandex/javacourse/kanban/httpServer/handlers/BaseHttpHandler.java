@@ -1,4 +1,4 @@
-package ru.yandex.javacourse.kanban.httpServer;
+package ru.yandex.javacourse.kanban.httpServer.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
 

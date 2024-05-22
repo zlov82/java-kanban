@@ -1,8 +1,9 @@
-package ru.yandex.javacourse.kanban.httpServer;
+package ru.yandex.javacourse.kanban.httpServer.handlers;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import ru.yandex.javacourse.kanban.httpServer.JsonTaskModel;
 import ru.yandex.javacourse.kanban.manager.TaskManager;
 import ru.yandex.javacourse.kanban.tasks.Epic;
 import ru.yandex.javacourse.kanban.tasks.Subtask;
@@ -54,7 +55,7 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
         if (optionalQueryId.isEmpty()) {
             List<Epic> epicList = manager.getAllEpics();
             sendSuccess(exchange, gson.toJson(epicList));
-        } else if (!getQueryEpicSubtask(exchange)){ // GET /epics/{id}
+        } else if (!getQueryEpicSubtask(exchange)) { // GET /epics/{id}
             Epic epic = manager.getEpicById(optionalQueryId.get());
             if (epic != null) {
                 sendSuccess(exchange, gson.toJson(epic));
@@ -64,8 +65,8 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
         } else { //  GET /epics/{id}/subtasks
             List<Subtask> subtaskList = manager.getAllTasksByEpic(optionalQueryId.get());
             if (!subtaskList.isEmpty()) {
-                sendSuccess(exchange,gson.toJson(subtaskList));
-            }else {
+                sendSuccess(exchange, gson.toJson(subtaskList));
+            } else {
                 sendNotFound(exchange);
             }
         }
