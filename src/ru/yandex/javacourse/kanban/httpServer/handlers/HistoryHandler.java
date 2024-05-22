@@ -3,7 +3,6 @@ package ru.yandex.javacourse.kanban.httpServer.handlers;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import ru.yandex.javacourse.kanban.manager.HistoryManager;
 import ru.yandex.javacourse.kanban.manager.TaskManager;
 import ru.yandex.javacourse.kanban.tasks.Task;
 

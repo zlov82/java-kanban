@@ -18,10 +18,6 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
     private final TaskManager manager;
     private Gson gson;
 
-    public EpicHandler(TaskManager manager) {
-        this.manager = manager;
-    }
-
     public EpicHandler(TaskManager manager, Gson gson) {
         this.manager = manager;
         this.gson = gson;

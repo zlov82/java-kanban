@@ -6,7 +6,6 @@ import com.sun.net.httpserver.HttpServer;
 import ru.yandex.javacourse.kanban.httpServer.adapters.DurationAdapter;
 import ru.yandex.javacourse.kanban.httpServer.adapters.LocalDateTimeAdapter;
 import ru.yandex.javacourse.kanban.httpServer.handlers.*;
-import ru.yandex.javacourse.kanban.manager.HistoryManager;
 import ru.yandex.javacourse.kanban.manager.Managers;
 import ru.yandex.javacourse.kanban.manager.TaskManager;
 import ru.yandex.javacourse.kanban.tasks.Epic;
@@ -42,7 +41,7 @@ public class HttpTaskServer {
     public void startServer() {
         httpServer.createContext("/tasks", new TaskHandler(manager,gson));
         httpServer.createContext("/epics", new EpicHandler(manager,gson));
-        httpServer.createContext("/subtasks", new SubtaskHandler(manager));
+        httpServer.createContext("/subtasks", new SubtaskHandler(manager,gson));
         httpServer.createContext("/history", new HistoryHandler(manager, gson));
         httpServer.createContext("/prioritized", new PrioretizedHandler(manager, gson));
         httpServer.start();
@@ -78,7 +77,7 @@ public class HttpTaskServer {
 
         manager.addNewTask(new Task("Задача 1","Описание 1"));
         manager.addNewTask(new Task("Задача 2","Описание 2"
-                ,LocalDateTime.of(2024,01,10,10,00)
+                ,LocalDateTime.of(2024,1,10,10,0)
                 ,Duration.ofMinutes(20)));
 /*
         manager.addNewTask(new Task("Со временем", "Описание"

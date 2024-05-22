@@ -18,10 +18,6 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
     private final TaskManager manager;
     private Gson gson;
 
-    public TaskHandler(TaskManager manager) {
-        this.manager = manager;
-    }
-
     public TaskHandler(TaskManager manager, Gson gson) {
         this.manager = manager;
         this.gson = gson;
@@ -93,17 +89,16 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
             }
         }
 
-        //Путь POST /tasks/{id} - обновление задачи
+        //обновление задачи
         if (optionalPostId.isPresent()) {
             Integer taskId = optionalPostId.get();
-            // Создание таска без даты и времени
+            // Обновление таска без даты и времени
             if (jsonTaskModel.getStartTime() == null || jsonTaskModel.getStatus() == null) {
                 manager.updateTask(new Task(taskId
                         , jsonTaskModel.getTitle()
                         , jsonTaskModel.getDescription()
                         , jsonTaskModel.getStatus()));
                 sendSuccessWithOutText(exchange);
-                return;
             } else { //обновление таска с датой и временем
                 try {
                     manager.updateTask(new Task(taskId
