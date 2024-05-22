@@ -69,17 +69,17 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
 
         if (optionalSubtaskId.isEmpty()) { // добавление задачи
             if (jsonTaskModel.getStartTime() == null || jsonTaskModel.getDuration() == null) { // подзадача без времени
-                manager.addNewSubtask(new Subtask(jsonTaskModel.getTitle()
-                        , jsonTaskModel.getDescription()
-                        , jsonTaskModel.getEpicId()));
+                manager.addNewSubtask(new Subtask(jsonTaskModel.getTitle(),
+                        jsonTaskModel.getDescription(),
+                        jsonTaskModel.getEpicId()));
                 sendSuccessWithOutText(exchange);
             } else { // подзадача со временем
                 try {
-                    manager.addNewSubtask(new Subtask(jsonTaskModel.getTitle()
-                            , jsonTaskModel.getDescription()
-                            , jsonTaskModel.getEpicId()
-                            , jsonTaskModel.getStartTime()
-                            , jsonTaskModel.getDuration()));
+                    manager.addNewSubtask(new Subtask(jsonTaskModel.getTitle(),
+                            jsonTaskModel.getDescription(),
+                            jsonTaskModel.getEpicId(),
+                            jsonTaskModel.getStartTime(),
+                            jsonTaskModel.getDuration()));
                     sendSuccessWithOutText(exchange);
                 } catch (ManagerSaveException | TaskCrossTimeException e) {
                     sendHasInteractions(exchange);
@@ -92,21 +92,21 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
             Integer subtaskId = optionalSubtaskId.get();
             //обновление подзадачи без времени
             if (jsonTaskModel.getStartTime() == null || jsonTaskModel.getStatus() == null) {
-                manager.updateSubtask(new Subtask(subtaskId
-                        , jsonTaskModel.getTitle()
-                        , jsonTaskModel.getDescription()
-                        , jsonTaskModel.getEpicId()
-                        , jsonTaskModel.getStatus()));
+                manager.updateSubtask(new Subtask(subtaskId,
+                        jsonTaskModel.getTitle(),
+                        jsonTaskModel.getDescription(),
+                        jsonTaskModel.getEpicId(),
+                        jsonTaskModel.getStatus()));
                 sendSuccessWithOutText(exchange);
             } else { //обновление подзадачи со временем
                 try {
-                    manager.updateSubtask(new Subtask(subtaskId
-                            , jsonTaskModel.getTitle()
-                            , jsonTaskModel.getDescription()
-                            , jsonTaskModel.getEpicId()
-                            , jsonTaskModel.getStatus()
-                            , jsonTaskModel.getStartTime()
-                            , jsonTaskModel.getDuration()));
+                    manager.updateSubtask(new Subtask(subtaskId,
+                            jsonTaskModel.getTitle(),
+                            jsonTaskModel.getDescription(),
+                            jsonTaskModel.getEpicId(),
+                            jsonTaskModel.getStatus(),
+                            jsonTaskModel.getStartTime(),
+                            jsonTaskModel.getDuration()));
                     sendSuccessWithOutText(exchange);
                 } catch (ManagerSaveException | TaskCrossTimeException e) {
                     sendHasInteractions(exchange);

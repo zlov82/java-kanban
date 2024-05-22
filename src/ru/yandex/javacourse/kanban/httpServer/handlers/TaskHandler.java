@@ -71,16 +71,16 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
         if (optionalPostId.isEmpty()) { //создание нового поста
             // Создание таска без даты и времени
             if (jsonTaskModel.getStartTime() == null || jsonTaskModel.getStatus() == null) {
-                manager.addNewTask(new Task(jsonTaskModel.getTitle()
-                        , jsonTaskModel.getDescription()));
+                manager.addNewTask(new Task(jsonTaskModel.getTitle(),
+                        jsonTaskModel.getDescription()));
                 sendSuccessWithOutText(exchange);
                 return;
             } else { //создание таска с датой и временем
                 try {
-                    manager.addNewTask(new Task(jsonTaskModel.getTitle()
-                            , jsonTaskModel.getDescription()
-                            , jsonTaskModel.getStartTime()
-                            , jsonTaskModel.getDuration()));
+                    manager.addNewTask(new Task(jsonTaskModel.getTitle(),
+                            jsonTaskModel.getDescription(),
+                            jsonTaskModel.getStartTime(),
+                            jsonTaskModel.getDuration()));
                     sendSuccessWithOutText(exchange);
                     return;
                 } catch (ManagerSaveException | TaskCrossTimeException e) {
@@ -94,19 +94,19 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
             Integer taskId = optionalPostId.get();
             // Обновление таска без даты и времени
             if (jsonTaskModel.getStartTime() == null || jsonTaskModel.getStatus() == null) {
-                manager.updateTask(new Task(taskId
-                        , jsonTaskModel.getTitle()
-                        , jsonTaskModel.getDescription()
-                        , jsonTaskModel.getStatus()));
+                manager.updateTask(new Task(taskId,
+                        jsonTaskModel.getTitle(),
+                        jsonTaskModel.getDescription(),
+                        jsonTaskModel.getStatus()));
                 sendSuccessWithOutText(exchange);
             } else { //обновление таска с датой и временем
                 try {
-                    manager.updateTask(new Task(taskId
-                            , jsonTaskModel.getTitle()
-                            , jsonTaskModel.getDescription()
-                            , jsonTaskModel.getStatus()
-                            , jsonTaskModel.getStartTime()
-                            , jsonTaskModel.getDuration()));
+                    manager.updateTask(new Task(taskId,
+                            jsonTaskModel.getTitle(),
+                            jsonTaskModel.getDescription(),
+                            jsonTaskModel.getStatus(),
+                            jsonTaskModel.getStartTime(),
+                            jsonTaskModel.getDuration()));
                     sendSuccessWithOutText(exchange);
                 } catch (ManagerSaveException | TaskCrossTimeException e) {
                     sendHasInteractions(exchange);
