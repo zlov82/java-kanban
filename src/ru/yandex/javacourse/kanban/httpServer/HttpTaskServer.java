@@ -59,41 +59,6 @@ public class HttpTaskServer {
         HttpTaskServer httpTaskServer = new HttpTaskServer(Managers.getDefault());
         httpTaskServer.startServer();
 
-        httpTaskServer.testTasks();
-    }
-
-    private void testTasks() {
-
-        int epicId1 = manager.addNewEpic(new Epic("Первый эпик"));
-        int epicId2 = manager.addNewEpic(new Epic("Второй эпик"));
-
-        manager.addNewSubtask(new Subtask("Под первым эпиком1", "Описание 1", epicId1
-                ,LocalDateTime.of(2023,12,31,23,59)
-                ,Duration.ofMinutes(10)));
-
-        manager.addNewSubtask(new Subtask("Под первым эпиком2", "Описание 2", epicId1));
-
-        manager.addNewSubtask(new Subtask("Под вторым эпиком", "Описание 2", epicId2));
-
-        manager.addNewTask(new Task("Задача 1","Описание 1"));
-        manager.addNewTask(new Task("Задача 2","Описание 2"
-                ,LocalDateTime.of(2024,1,10,10,0)
-                ,Duration.ofMinutes(20)));
-/*
-        manager.addNewTask(new Task("Со временем", "Описание"
-        ,LocalDateTime.of(2024,05,22,17,00)
-        ,Duration.ofMinutes(120)));
-*/
-
-/*        Task task = new Task("Со временем", "Описание"
-                ,LocalDateTime.of(2024,05,22,17,00)
-                ,Duration.ofDays(2));
-
-        String jsonTask = gson.toJson(task);
-
-        JsonTestTaskModel jsonTaskModel = gson.fromJson(jsonTask, JsonTestTaskModel.class);
-
-        System.out.println("123");*/
     }
 
 }
