@@ -20,7 +20,7 @@ public class HttpTaskServer {
     private HttpServer httpServer;
     private Gson gson;
 
-    HttpTaskServer(TaskManager manager) throws IOException {
+    public HttpTaskServer(TaskManager manager) throws IOException {
         this.manager = manager;
         this.httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
 

@@ -67,6 +67,12 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
         JsonTaskModel jsonTaskModel = gson.fromJson(body, JsonTaskModel.class);
         Optional<Integer> optionalPostId = Optional.ofNullable(jsonTaskModel.getId());
 
+        if (optionalPostId.isPresent()) {
+            if (optionalPostId.get() == 0) {
+                optionalPostId = Optional.empty();
+            }
+        }
+
         // добавление новой задачи
         if (optionalPostId.isEmpty()) { //создание нового поста
             // Создание таска без даты и времени
