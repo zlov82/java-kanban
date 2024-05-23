@@ -136,7 +136,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic getEpicById(int epicId) {
         Epic epic = epicsDb.get(epicId);
-        historyManager.add(new Epic(epic)); //в историю помещается дубль эпика
+        if (epic != null) {
+            historyManager.add(new Epic(epic)); //в историю помещается дубль эпика
+        }
         return epic;
     }
 
